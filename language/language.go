@@ -78,3 +78,14 @@ func GetOp(key string) (Operator, error) {
 
 	return op, nil
 }
+
+func GetDir(key string) (Directive, error) {
+	mn := Mnemonic(key)
+	dir, exists := Directives[mn]
+
+	if !exists {
+		return dir, fmt.Errorf("directive '%v' does not exist", key)
+	}
+
+	return dir, nil
+}

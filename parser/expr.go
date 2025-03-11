@@ -1,8 +1,6 @@
 package parser
 
-import (
-	"github.com/silaspace/aria/language"
-)
+import "github.com/silaspace/aria/language"
 
 type ExprType int
 

@@ -19,7 +19,8 @@ func (l *Label) Fmt() string {
 }
 
 func (d *Directive) Fmt() string {
-	return "DIR\n"
+	dirval := d.Value.Fmt()
+	return fmt.Sprintf("DIR '%v'\n", dirval)
 }
 
 func (i *Instruction) Fmt() string {
@@ -65,4 +66,40 @@ func (b *BinopExpr) Fmt() string {
 func (m *MonopExpr) Fmt() string {
 	estr := m.E1.Fmt()
 	return fmt.Sprintf("(OP %v)", estr)
+}
+
+func (e *ErrorDirVal) Fmt() string {
+	return "DIR_ERR"
+}
+
+func (n *NilDirVal) Fmt() string {
+	return "NIL"
+}
+
+func (i *IdentDirVal) Fmt() string {
+	return fmt.Sprintf("IDENT %v", i.Value)
+}
+
+func (i *ImmDirVal) Fmt() string {
+	return fmt.Sprintf("IMM %v", i.Value)
+}
+
+func (e *ExprDirVal) Fmt() string {
+	estr := e.Value.Fmt()
+	return fmt.Sprintf("EXPR %v", estr)
+}
+
+func (e *ExprListDirVal) Fmt() string {
+	output := []string{}
+
+	for _, expr := range e.Value {
+		output = append(output, expr.Fmt())
+	}
+
+	return fmt.Sprintf("%v", output)
+}
+
+func (e *AssignDirVal) Fmt() string {
+	estr := e.Value.Fmt()
+	return fmt.Sprintf("%v = %v", e.Symbol, estr)
 }

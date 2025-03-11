@@ -20,10 +20,16 @@ type Writer interface {
 }
 
 type Assembler struct {
-	Reader Reader
-	Writer Writer
-	Parser parser.Parser
-	PC     uint64
+	Device  device.Device
+	Parser  parser.Parser
+	PC      uint64
+	Reader  Reader
+	Symbols map[string]uint64
+	Writer  Writer
+}
+
+func (a *Assembler) AddSymbol(symbol string, value uint64) {
+	a.Symbols[symbol] = value
 }
 
 func (a *Assembler) Close() {
@@ -52,9 +58,6 @@ func (a *Assembler) Run() error {
 		return err
 	}
 
-	symbols := map[string]uint64{}
-	dev := device.DefaultDevice()
-
 	for {
 		line := a.Parser.Next()
 
@@ -67,19 +70,26 @@ func (a *Assembler) Run() error {
 			continue
 
 		case *parser.Directive:
-			continue
+			dir, err := language.GetDir(line.Mnemonic)
+
+			if err != nil {
+				return err
+			}
+
+			val := EvalDirVal(line.Value, a.Symbols)
+			dir.Execute(a, val)
 
 		case *parser.Label:
-			_, exists := symbols[line.Value]
+			_, exists := a.Symbols[line.Value]
 
 			if exists {
 				return a.error("duplicate label %v", line.Value)
 			}
 
-			symbols[line.Value] = a.PC
+			a.AddSymbol(line.Value, a.PC)
 
 		case *parser.Instruction:
-			instr, err := language.GetInstr(line.Mnemonic, dev)
+			instr, err := language.GetInstr(line.Mnemonic, &a.Device)
 
 			if err != nil {
 				return err
@@ -124,7 +134,7 @@ func (a *Assembler) Run() error {
 			continue
 
 		case *parser.Instruction:
-			instr, err := language.GetInstr(line.Mnemonic, dev)
+			instr, err := language.GetInstr(line.Mnemonic, &a.Device)
 
 			if err != nil {
 				return err
@@ -133,7 +143,7 @@ func (a *Assembler) Run() error {
 			relative := instr.IsRelative()
 
 			if line.Op1.Type() != parser.NilArg {
-				operand, err := EvalArg(line.Op1, symbols, relative, a.PC)
+				operand, err := EvalArg(line.Op1, a.Symbols, relative, a.PC)
 
 				if err != nil {
 					return err
@@ -147,7 +157,7 @@ func (a *Assembler) Run() error {
 			}
 
 			if line.Op2.Type() != parser.NilArg {
-				operand, err := EvalArg(line.Op2, symbols, relative, a.PC)
+				operand, err := EvalArg(line.Op2, a.Symbols, relative, a.PC)
 
 				if err != nil {
 					return err
@@ -184,8 +194,17 @@ func (a *Assembler) Run() error {
 	return nil
 }
 
+func (a *Assembler) SetDevice(name string) {
+	dev, err := device.NewDevice(name)
+
+	if err != nil {
+		a.error(err.Error())
+	}
+
+	a.Device = *dev
+}
+
 func (a *Assembler) error(fstr string, args ...interface{}) error {
-	//msg := fmt.Sprintf(fstr, args...)
 	err := fmt.Errorf(fstr, args...)
 	return err
 }

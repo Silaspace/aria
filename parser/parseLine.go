@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 
+	"github.com/silaspace/aria/language"
 	"github.com/silaspace/aria/lexer"
 )
 
@@ -101,8 +102,33 @@ func Dot(p *Parser) Line {
 }
 
 func Dir(p *Parser) Line {
-	return &Error{
-		Value: "Dir not implemented",
+	token := p.GetCurrentToken()
+	mn := language.Mnemonic(token.Value)
+
+	switch mn {
+	case language.DIR_DEVICE:
+		dirval := DirIdent(p)
+
+		switch dirval := dirval.(type) {
+		case *ErrorDirVal:
+			return &Error{
+				Value: dirval.Value,
+			}
+
+		default:
+			return &Directive{
+				Mnemonic: string(mn),
+				Value:    dirval,
+			}
+		}
+
+	default:
+		return &Error{
+			fmt.Sprintf(
+				"Unexpected directive '%v'",
+				mn,
+			),
+		}
 	}
 }
 

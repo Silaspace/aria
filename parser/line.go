@@ -32,6 +32,7 @@ type Label struct {
 
 type Directive struct {
 	Mnemonic string
+	Value    DirVal
 }
 
 type Instruction struct {
