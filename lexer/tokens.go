@@ -64,14 +64,17 @@ var _pmap = map[Type]string{
 	TK_RBRAC: ")  ",
 	TK_EQ:    "=  ",
 
-	TK_COMMENT:  "COM",
-	TK_IDENT:    "IDT",
-	TK_INSTR:    "IST",
-	TK_FUNC:     "FUN",
+	TK_COMMENT: "COM",
+	TK_INSTR:   "IST",
+	TK_DIR:     "DIR",
+	TK_FUNC:    "FUN",
+	TK_IDENT:   "IDT",
+
 	TK_OPERATOR: "OP ",
-	TK_REG:      "REG",
-	TK_IMM:      "IMM",
-	TK_HEX:      "HEX",
-	TK_OCT:      "OCT",
-	TK_BIN:      "BIN",
+
+	TK_REG: "REG",
+	TK_IMM: "IMM",
+	TK_HEX: "HEX",
+	TK_OCT: "OCT",
+	TK_BIN: "BIN",
 }
