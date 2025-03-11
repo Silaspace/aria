@@ -69,8 +69,8 @@ type Directive struct {
 }
 
 type Assembler interface {
-	AddSymbol(string, uint64)
-	SetDevice(string)
+	AddSymbol(string, uint64) error
+	SetDevice(string) error
 }
 
 const (
@@ -83,7 +83,12 @@ var Directives = map[Mnemonic]Directive{
 		Execute: func(a Assembler, v Value) error {
 			switch v := v.(type) {
 			case *Ident:
-				a.SetDevice(v.Value)
+				err := a.SetDevice(v.Value)
+
+				if err != nil {
+					return err
+				}
+
 				return nil
 
 			default:
@@ -95,7 +100,12 @@ var Directives = map[Mnemonic]Directive{
 		Execute: func(a Assembler, v Value) error {
 			switch v := v.(type) {
 			case *Assignment:
-				a.AddSymbol(v.Symbol, v.Value)
+				err := a.AddSymbol(v.Symbol, v.Value)
+
+				if err != nil {
+					return err
+				}
+
 				return nil
 
 			default:

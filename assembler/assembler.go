@@ -28,8 +28,15 @@ type Assembler struct {
 	Writer  Writer
 }
 
-func (a *Assembler) AddSymbol(symbol string, value uint64) {
+func (a *Assembler) AddSymbol(symbol string, value uint64) error {
+	_, exists := a.Symbols[symbol]
+
+	if exists {
+		return a.error("duplicate label %v", symbol)
+	}
+
 	a.Symbols[symbol] = value
+	return nil
 }
 
 func (a *Assembler) Close() {
@@ -80,13 +87,11 @@ func (a *Assembler) Run() error {
 			dir.Execute(a, val)
 
 		case *parser.Label:
-			_, exists := a.Symbols[line.Value]
+			err := a.AddSymbol(line.Value, a.PC)
 
-			if exists {
-				return a.error("duplicate label %v", line.Value)
+			if err != nil {
+				return err
 			}
-
-			a.AddSymbol(line.Value, a.PC)
 
 		case *parser.Instruction:
 			instr, err := language.GetInstr(line.Mnemonic, &a.Device)
@@ -194,14 +199,15 @@ func (a *Assembler) Run() error {
 	return nil
 }
 
-func (a *Assembler) SetDevice(name string) {
+func (a *Assembler) SetDevice(name string) error {
 	dev, err := device.NewDevice(name)
 
 	if err != nil {
-		a.error(err.Error())
+		return err
 	}
 
 	a.Device = *dev
+	return nil
 }
 
 func (a *Assembler) error(fstr string, args ...interface{}) error {
