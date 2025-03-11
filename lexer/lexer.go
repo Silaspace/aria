@@ -1,6 +1,8 @@
 package lexer
 
 import (
+	"unicode"
+
 	"github.com/silaspace/aria/language"
 )
 
@@ -91,7 +93,12 @@ func (l *Lexer) EmitIdent() {
 }
 
 func (l *Lexer) EmitOperator() {
-	// search
+	_, err := language.GetOp(string(l.Buff))
+
+	if err != nil {
+		l.Emit(TK_ERR)
+	}
+
 	l.Emit(TK_OPERATOR)
 }
 
@@ -107,7 +114,8 @@ func (l *Lexer) GetRune() (rune, error) {
 		return ' ', err
 	}
 
-	return nextRune, nil
+	lowerRune := unicode.ToLower(nextRune) // Send all runes to lowercase
+	return lowerRune, nil
 }
 
 func (l *Lexer) Next() Token {
