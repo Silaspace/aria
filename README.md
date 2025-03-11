@@ -1,4 +1,4 @@
-# Aria ![Static Badge](https://img.shields.io/badge/version%20-%200.3.0%20-%20green) ![Static Badge](https://img.shields.io/badge/license%20-%20GPLv3%20-%20green)
+# Aria ![Static Badge](https://img.shields.io/badge/version%20-%200.4.0%20-%20green) ![Static Badge](https://img.shields.io/badge/license%20-%20GPLv3%20-%20green)
 
 */aria/ - a striking solo performance*
 
