@@ -178,7 +178,7 @@ var AVR = map[Mnemonic]Instruction{
 		Encoding  1001 010d dddd 0101
 	*/
 	ASR: {
-		Base:  0x0000,
+		Base:  0x9405,
 		Op1:   Rd,
 		Op2:   nil,
 		Flags: 0,
@@ -706,7 +706,7 @@ var AVR = map[Mnemonic]Instruction{
 		Encoding  1110 KKKK dddd KKKK
 	*/
 	LDI: {
-		Base:  0x0000,
+		Base:  0xE000,
 		Op1:   Rd_high,
 		Op2:   k_8,
 		Flags: 0,
