@@ -59,6 +59,8 @@ func (a *Assembler) Run() error {
 		PASS 1 - Record lables and directives
 	*/
 
+	a.Symbols = map[string]uint64{}
+	a.Device = *device.DefaultDevice()
 	err := a.Reset()
 
 	if err != nil {
