@@ -1,5 +1,6 @@
 target/*
 *.hex
+*.lst
 .vscode/*
 !.vscode/extensions.json
 .DS_Store
