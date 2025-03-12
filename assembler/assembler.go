@@ -161,6 +161,8 @@ func (a *Assembler) Run() error {
 				if err != nil {
 					return err
 				}
+			} else if instr.Op1 != nil {
+				return a.error("operand expected, NIL found")
 			}
 
 			if line.Op2.Type() != parser.NilArg {
@@ -175,6 +177,8 @@ func (a *Assembler) Run() error {
 				if err != nil {
 					return err
 				}
+			} else if instr.Op2 != nil {
+				return a.error("operand expected, NIL found")
 			}
 
 			if instr.IsLong() {
