@@ -14,6 +14,8 @@ func Comment(l *Lexer) State {
 		switch nextRune {
 		case '\n':
 			l.Emit(TK_COMMENT)
+			l.AddToBuffer(nextRune)
+			l.EmitControl()
 			return Start
 
 		default:

@@ -18,6 +18,7 @@ func ParseLine(p *Parser) Line {
 		case lexer.TK_COMMENT:
 			return &Comment{
 				Value: token.Value,
+				Line:  p.Line,
 			}
 
 		case lexer.TK_IDENT:
@@ -30,19 +31,23 @@ func ParseLine(p *Parser) Line {
 			return Instr(p)
 
 		case lexer.TK_EOF:
-			return &EOF{}
+			return &EOF{
+				Line: p.Line,
+			}
 
 		case lexer.TK_ERR:
 			return &Error{
 				Value: token.Value,
+				Line:  p.Line,
 			}
 
 		default:
 			return &Error{
-				fmt.Sprintf(
+				Value: fmt.Sprintf(
 					"Unexpected token %v after nothing",
 					token.Print(),
 				),
+				Line: p.Line,
 			}
 		}
 	}
@@ -56,22 +61,16 @@ func Lab(p *Parser) Line {
 	case lexer.TK_COLON:
 		return &Label{
 			Value: ident,
-		}
-
-	case lexer.TK_DIR, lexer.TK_INSTR:
-		return &Error{
-			Value: fmt.Sprintf(
-				"Keyword '%v' cannot be used as label",
-				token.Value,
-			),
+			Line:  p.Line,
 		}
 
 	default:
 		return &Error{
-			fmt.Sprintf(
+			Value: fmt.Sprintf(
 				"Unexpected token %v after IDENT",
 				token.Print(),
 			),
+			Line: p.Line,
 		}
 	}
 }
@@ -83,20 +82,22 @@ func Dot(p *Parser) Line {
 	case lexer.TK_DIR:
 		return Dir(p)
 
-	case lexer.TK_IDENT:
+	case lexer.TK_IDENT, lexer.TK_FUNC, lexer.TK_INSTR:
 		return &Error{
-			fmt.Sprintf(
-				"Identifier '%v' is not a directive",
+			Value: fmt.Sprintf(
+				"Keyword '%v' is not a directive",
 				token.Value,
 			),
+			Line: p.Line,
 		}
 
 	default:
 		return &Error{
-			fmt.Sprintf(
+			Value: fmt.Sprintf(
 				"Unexpected token %v after DOT",
 				token.Print(),
 			),
+			Line: p.Line,
 		}
 	}
 }
@@ -113,18 +114,20 @@ func Dir(p *Parser) Line {
 		case *ErrorDirVal:
 			return &Error{
 				Value: dirval.Value,
+				Line:  p.Line,
 			}
 
 		default:
 			return &Directive{
 				Mnemonic: string(mn),
 				Value:    dirval,
+				Line:     p.Line,
 			}
 		}
 
 	default:
 		return &Error{
-			fmt.Sprintf(
+			Value: fmt.Sprintf(
 				"Unexpected directive '%v'",
 				mn,
 			),
@@ -141,6 +144,7 @@ func Instr(p *Parser) Line {
 	if err, ok := arg1.(*ArgError); ok {
 		return &Error{
 			Value: err.Value,
+			Line:  p.Line,
 		}
 	}
 
@@ -155,6 +159,7 @@ func Instr(p *Parser) Line {
 		case *ArgError:
 			return &Error{
 				Value: arg2.Value,
+				Line:  p.Line,
 			}
 
 		default:
@@ -162,22 +167,33 @@ func Instr(p *Parser) Line {
 				Mnemonic: token.Value,
 				Op1:      arg1,
 				Op2:      arg2,
+				Line:     p.Line,
 			}
 		}
 
-	case lexer.TK_LINE, lexer.TK_COMMENT, lexer.TK_EOF:
+	case lexer.TK_COMMENT, lexer.TK_EOF:
 		return &Instruction{
 			Mnemonic: token.Value,
 			Op1:      arg1,
 			Op2:      &Nil{},
+			Line:     p.Line,
+		}
+
+	case lexer.TK_LINE:
+		return &Instruction{
+			Mnemonic: token.Value,
+			Op1:      arg1,
+			Op2:      &Nil{},
+			Line:     p.Line - 1,
 		}
 
 	default:
 		return &Error{
-			fmt.Sprintf(
+			Value: fmt.Sprintf(
 				"Unexpected token %v after IST",
 				nextToken.Print(),
 			),
+			Line: p.Line,
 		}
 
 	}

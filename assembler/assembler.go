@@ -21,6 +21,7 @@ type Writer interface {
 
 type Assembler struct {
 	Device  device.Device
+	Line    uint64
 	Parser  parser.Parser
 	PC      uint64
 	Reader  Reader
@@ -44,14 +45,23 @@ func (a *Assembler) Close() {
 	a.Writer.Close()
 }
 
-func (a *Assembler) Reset() error {
-	err := a.Reader.Reset()
+func (a *Assembler) HardReset() error {
+	err := a.SoftReset()
+
 	if err != nil {
 		return err
 	}
-	a.Parser.Lexer.Reset()
-	a.PC = 0
+
+	a.Symbols = map[string]uint64{}
+	a.Device = *device.DefaultDevice()
+
 	return nil
+}
+
+func (a *Assembler) GetNextLine() parser.Line {
+	line := a.Parser.Next()
+	a.Line = line.Number()
+	return line
 }
 
 func (a *Assembler) Run() error {
@@ -59,16 +69,14 @@ func (a *Assembler) Run() error {
 		PASS 1 - Record lables and directives
 	*/
 
-	a.Symbols = map[string]uint64{}
-	a.Device = *device.DefaultDevice()
-	err := a.Reset()
+	err := a.HardReset()
 
 	if err != nil {
 		return err
 	}
 
 	for {
-		line := a.Parser.Next()
+		line := a.GetNextLine()
 
 		if _, ok := line.(*parser.EOF); ok {
 			break
@@ -120,17 +128,14 @@ func (a *Assembler) Run() error {
 		PASS 2 - Generate code
 	*/
 
-	err = a.Reset()
+	err = a.SoftReset()
 
 	if err != nil {
 		return err
 	}
 
 	for {
-
-		a.Parser.Lexer.Reset()
-
-		line := a.Parser.Next()
+		line := a.GetNextLine()
 
 		if _, ok := line.(*parser.EOF); ok {
 			break
@@ -216,7 +221,21 @@ func (a *Assembler) SetDevice(name string) error {
 	return nil
 }
 
+func (a *Assembler) SoftReset() error {
+	err := a.Reader.Reset()
+
+	if err != nil {
+		return err
+	}
+
+	a.Parser.Reset()
+	a.Parser.Lexer.Reset()
+	a.PC = 0
+	return nil
+}
+
 func (a *Assembler) error(fstr string, args ...interface{}) error {
-	err := fmt.Errorf(fstr, args...)
+	msg := fmt.Sprintf(fstr, args...)
+	err := fmt.Errorf("%v on line %v", msg, a.Line)
 	return err
 }

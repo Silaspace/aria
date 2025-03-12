@@ -7,5 +7,6 @@ const BUFFER_LEN int = 30
 func NewParser(in *lexer.Lexer) *Parser {
 	return &Parser{
 		Lexer: in,
+		Line:  1,
 	}
 }
