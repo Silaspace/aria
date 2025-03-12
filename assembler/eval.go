@@ -8,26 +8,41 @@ import (
 	"github.com/silaspace/aria/parser"
 )
 
-func EvalArg(arg parser.Arg, symbolTable map[string]uint64, relativeInstr bool, pc uint64) (uint64, error) {
+func EvalArg(arg parser.Arg, symbolTable map[string]uint64, relativeInstr bool, pc uint64) language.Value {
 	switch arg := arg.(type) {
+	case *parser.Nil:
+		return &language.Nil{}
+
 	case *parser.ArgReg:
 		regVal, err := strconv.ParseUint(arg.Value, 10, 32)
+
 		if err != nil {
-			return 0, err
+			return &language.Error{
+				Value: err.Error(),
+			}
 		}
-		return regVal, nil
+
+		return &language.Reg{
+			Value: regVal,
+		}
 
 	case *parser.ArgExpr:
 		val, err := EvalExpr(arg.Value, symbolTable, relativeInstr, pc)
 
 		if err != nil {
-			return 0, err
+			return &language.Error{
+				Value: err.Error(),
+			}
 		}
 
-		return val, nil
+		return &language.Int{
+			Value: val,
+		}
 
 	default:
-		return 0, fmt.Errorf("unkown arg type")
+		return &language.Error{
+			Value: "unkown arg type",
+		}
 	}
 }
 

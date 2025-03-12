@@ -154,36 +154,18 @@ func (a *Assembler) Run() error {
 
 			relative := instr.IsRelative()
 
-			if line.Op1.Type() != parser.NilArg {
-				operand, err := EvalArg(line.Op1, a.Symbols, relative, a.PC)
+			op1 := EvalArg(line.Op1, a.Symbols, relative, a.PC)
+			err = instr.Apply1(op1)
 
-				if err != nil {
-					return err
-				}
-
-				err = instr.Apply1(operand)
-
-				if err != nil {
-					return err
-				}
-			} else if instr.Op1 != nil {
-				return a.error("operand expected, NIL found")
+			if err != nil {
+				return err
 			}
 
-			if line.Op2.Type() != parser.NilArg {
-				operand, err := EvalArg(line.Op2, a.Symbols, relative, a.PC)
+			op2 := EvalArg(line.Op2, a.Symbols, relative, a.PC)
+			err = instr.Apply2(op2)
 
-				if err != nil {
-					return err
-				}
-
-				err = instr.Apply2(operand)
-
-				if err != nil {
-					return err
-				}
-			} else if instr.Op2 != nil {
-				return a.error("operand expected, NIL found")
+			if err != nil {
+				return err
 			}
 
 			if instr.IsLong() {

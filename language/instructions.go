@@ -6,7 +6,7 @@ import (
 )
 
 type Flag int
-type OpFunc func(uint64, uint64) (uint64, error)
+type OpFunc func(uint64, Value) (uint64, error)
 
 type Instruction struct {
 	Mnemonic Mnemonic
@@ -1189,7 +1189,11 @@ var AVRe = map[Mnemonic]Instruction{
 	},
 }
 
-func (instr *Instruction) Apply1(op uint64) error {
+func (instr *Instruction) Apply1(op Value) error {
+	if _, ok := op.(*Nil); ok {
+		return nil
+	}
+
 	newBase, err := instr.Op1(instr.Base, op)
 
 	if err != nil {
@@ -1200,7 +1204,11 @@ func (instr *Instruction) Apply1(op uint64) error {
 	return nil
 }
 
-func (instr *Instruction) Apply2(op uint64) error {
+func (instr *Instruction) Apply2(op Value) error {
+	if _, ok := op.(*Nil); ok {
+		return nil
+	}
+
 	newBase, err := instr.Op2(instr.Base, op)
 
 	if err != nil {
