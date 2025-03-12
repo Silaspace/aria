@@ -1190,7 +1190,7 @@ var AVRe = map[Mnemonic]Instruction{
 }
 
 func (instr *Instruction) Apply1(op Value) error {
-	if _, ok := op.(*Nil); ok {
+	if _, ok := op.(*Nil); ok && instr.Op1 == nil {
 		return nil
 	}
 
@@ -1205,7 +1205,7 @@ func (instr *Instruction) Apply1(op Value) error {
 }
 
 func (instr *Instruction) Apply2(op Value) error {
-	if _, ok := op.(*Nil); ok {
+	if _, ok := op.(*Nil); ok && instr.Op2 == nil {
 		return nil
 	}
 
