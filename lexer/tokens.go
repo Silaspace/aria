@@ -10,9 +10,10 @@ type Token struct {
 }
 
 const (
-	TK_ERR  Type = 10
-	TK_EOF  Type = 11
-	TK_LINE Type = 12
+	TK_ERR     Type = 10
+	TK_EOF     Type = 11
+	TK_LINE    Type = 12
+	TK_COMMENT Type = 13
 
 	TK_COLON Type = 20
 	TK_COMMA Type = 21
@@ -21,13 +22,12 @@ const (
 	TK_RBRAC Type = 24
 	TK_EQ    Type = 25
 
-	TK_COMMENT Type = 30
-	TK_INSTR   Type = 31
-	TK_DIR     Type = 32
-	TK_FUNC    Type = 33
-	TK_IDENT   Type = 34
+	TK_INSTR Type = 30
+	TK_DIR   Type = 31
+	TK_FUNC  Type = 32
+	TK_IDENT Type = 33
 
-	TK_OPERATOR Type = 40
+	TK_OP Type = 40
 
 	TK_REG Type = 50
 	TK_IMM Type = 51
@@ -70,7 +70,7 @@ var _pmap = map[Type]string{
 	TK_FUNC:    "FUN",
 	TK_IDENT:   "IDT",
 
-	TK_OPERATOR: "OP ",
+	TK_OP: "OP ",
 
 	TK_REG: "REG",
 	TK_IMM: "IMM",

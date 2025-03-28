@@ -9,7 +9,7 @@ import (
 
 func GetPrecedence(token lexer.Token) int {
 	switch token.Type {
-	case lexer.TK_OPERATOR:
+	case lexer.TK_OP:
 		op, _ := language.GetOp(token.Value)
 		return op.BindingPower
 
@@ -102,7 +102,7 @@ func ParseOp(p *Parser, left Expr) Expr {
 	right := ParseExpr(p, tbp)
 
 	switch token.Type {
-	case lexer.TK_OPERATOR:
+	case lexer.TK_OP:
 		op, _ := language.GetOp(token.Value)
 		return &BinopExpr{
 			E1: left,

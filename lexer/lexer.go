@@ -99,7 +99,7 @@ func (l *Lexer) EmitOperator() {
 		l.Emit(TK_ERR)
 	}
 
-	l.Emit(TK_OPERATOR)
+	l.Emit(TK_OP)
 }
 
 func (l *Lexer) EmitRegister() {
