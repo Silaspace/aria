@@ -7,10 +7,16 @@ import (
 	"github.com/silaspace/aria/lexer"
 )
 
-func GetPrecedence(token lexer.Token) int {
+func GetPrecedence(token lexer.Token, unary bool) int {
 	switch token.Type {
 	case lexer.TK_OP:
 		op, _ := language.GetOp(token.Value)
+
+		// Hardcode unary minus precedence
+		if unary && token.Value == string(language.SUB) {
+			return 14
+		}
+
 		return op.BindingPower
 
 	case lexer.TK_HEX, lexer.TK_IMM, lexer.TK_OCT, lexer.TK_BIN, lexer.TK_IDENT:
@@ -27,7 +33,7 @@ func ParseExpr(p *Parser, precedence int) Expr {
 
 	for {
 		token := p.GetCurrentToken()
-		tbp := GetPrecedence(token)
+		tbp := GetPrecedence(token, false)
 
 		if tbp <= precedence {
 			break
@@ -89,26 +95,61 @@ func ParseLeft(p *Parser) Expr {
 		p.GetNextToken() // Consume ')'
 		return expr
 
+	case lexer.TK_OP:
+		op, _ := language.GetOp(token.Value)
+		tbp := GetPrecedence(token, true)
+		expr := ParseExpr(p, tbp)
+
+		if op.IsUnary() {
+			return &MonopExpr{
+				Op: op,
+				E1: expr,
+			}
+		} else {
+			return &ErrorExpr{
+				Value: fmt.Sprintf(
+					"Binary operator %v with no left expression",
+					token.Print(),
+				),
+			}
+		}
+
 	default:
-		return &Literal{}
+		return &ErrorExpr{
+			Value: fmt.Sprintf(
+				"Unexpected token %v in expression",
+				token.Print(),
+			),
+		}
 	}
 }
 
 func ParseOp(p *Parser, left Expr) Expr {
 
 	token := p.GetCurrentToken()
-	tbp := GetPrecedence(token)
+	tbp := GetPrecedence(token, false)
 	p.GetNextToken()
 	right := ParseExpr(p, tbp)
 
 	switch token.Type {
 	case lexer.TK_OP:
 		op, _ := language.GetOp(token.Value)
-		return &BinopExpr{
-			E1: left,
-			Op: op,
-			E2: right,
+
+		if op.IsBinary() {
+			return &BinopExpr{
+				E1: left,
+				Op: op,
+				E2: right,
+			}
+		} else {
+			return &ErrorExpr{
+				Value: fmt.Sprintf(
+					"Unary operator %v with left expression supplied",
+					token.Print(),
+				),
+			}
 		}
+
 	default:
 		return &ErrorExpr{
 			Value: fmt.Sprintf(

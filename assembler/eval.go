@@ -136,16 +136,14 @@ func EvalExpr(expr parser.Expr, symbolTable map[string]uint64, relativeInstr boo
 
 		return val, nil
 
-	/*
-		case *parser.MonopExpr:
-			e1, err := EvalExpr(expr.E1)
+	case *parser.MonopExpr:
+		e1, err := EvalExpr(expr.E1, symbolTable, relativeInstr, pc)
 
-			if err != nil {
-				return 0, err
-			}
+		if err != nil {
+			return 0, err
+		}
 
-			return expr.Op.Apply(e1), nil
-	*/
+		return expr.Op.Apply(e1, 0), nil
 
 	case *parser.BinopExpr:
 		e1, err := EvalExpr(expr.E1, symbolTable, relativeInstr, pc)
