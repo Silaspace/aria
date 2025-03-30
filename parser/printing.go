@@ -34,7 +34,7 @@ func (n *Nil) Fmt() string {
 }
 
 func (a *ArgError) Fmt() string {
-	return "ARG_ERR"
+	return fmt.Sprintf("ARG_ERR %v", a.Value)
 }
 
 func (r *ArgReg) Fmt() string {
@@ -46,7 +46,7 @@ func (e *ArgExpr) Fmt() string {
 }
 
 func (e *ErrorExpr) Fmt() string {
-	return "EXPR_ERR"
+	return fmt.Sprintf("EXPR_ERR %v", e.Value)
 }
 
 func (i *Ident) Fmt() string {
@@ -74,7 +74,7 @@ func (f *FuncExpr) Fmt() string {
 }
 
 func (e *ErrorDirVal) Fmt() string {
-	return "DIR_ERR"
+	return fmt.Sprintf("DIR_ERR %v", e.Value)
 }
 
 func (n *NilDirVal) Fmt() string {

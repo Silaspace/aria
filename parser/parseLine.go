@@ -190,7 +190,7 @@ func Instr(p *Parser) Line {
 	default:
 		return &Error{
 			Value: fmt.Sprintf(
-				"Unexpected token %v after IST",
+				"Unexpected token %v after INST",
 				nextToken.Print(),
 			),
 			Line: p.Line,
