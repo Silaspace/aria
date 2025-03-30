@@ -68,6 +68,11 @@ func (m *MonopExpr) Fmt() string {
 	return fmt.Sprintf("(%v %v)", m.Symbol, estr)
 }
 
+func (f *FuncExpr) Fmt() string {
+	estr := f.E1.Fmt()
+	return fmt.Sprintf("%v (%v)", f.Symbol, estr)
+}
+
 func (e *ErrorDirVal) Fmt() string {
 	return "DIR_ERR"
 }

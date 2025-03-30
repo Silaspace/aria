@@ -15,6 +15,7 @@ const (
 	ExprIdent ExprType = 2
 	ExprMonop ExprType = 3
 	ExprBinop ExprType = 4
+	ExprFunc  ExprType = 5
 )
 
 type ErrorExpr struct {
@@ -43,6 +44,12 @@ type MonopExpr struct {
 	Op     language.Operator
 }
 
+type FuncExpr struct {
+	E1     Expr
+	Symbol string
+	Func   language.Function
+}
+
 func (e *ErrorExpr) Type() ExprType {
 	return ExprErr
 }
@@ -61,4 +68,8 @@ func (b *BinopExpr) Type() ExprType {
 
 func (m *MonopExpr) Type() ExprType {
 	return ExprMonop
+}
+
+func (f *FuncExpr) Type() ExprType {
+	return ExprFunc
 }

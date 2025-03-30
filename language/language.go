@@ -89,3 +89,14 @@ func GetDir(key string) (Directive, error) {
 
 	return dir, nil
 }
+
+func GetFunc(key string) (Function, error) {
+	mn := Mnemonic(key)
+	function, exists := Functions[mn]
+
+	if !exists {
+		return function, fmt.Errorf("directive '%v' does not exist", key)
+	}
+
+	return function, nil
+}

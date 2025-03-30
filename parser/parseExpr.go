@@ -95,6 +95,20 @@ func ParseLeft(p *Parser) Expr {
 		p.GetNextToken() // Consume ')'
 		return expr
 
+	case lexer.TK_FUNC:
+		function, _ := language.GetFunc(token.Value)
+		p.GetNextToken()
+
+		p.GetNextToken() // Consume '('
+		expr := ParseExpr(p, 0)
+		p.GetNextToken() // Consume ')'
+
+		return &FuncExpr{
+			E1:     expr,
+			Symbol: token.Value,
+			Func:   function,
+		}
+
 	case lexer.TK_OP:
 		op, _ := language.GetOp(token.Value)
 
