@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/silaspace/aria/handler"
 	"github.com/silaspace/aria/lexer"
 )
@@ -19,13 +17,13 @@ func NewLexCommand(rawArgs []string) *LexCommand {
 	err := flags.Parse(rawArgs)
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	err = flags.SetOutput(TxtExt)
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	// Return command
@@ -40,13 +38,13 @@ func (lc *LexCommand) Run() {
 	reader, err := handler.NewFileReader(lc.input)
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	writer, err := handler.NewFileWriter(lc.output)
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	lex := lexer.NewLexer(reader)
@@ -60,7 +58,6 @@ func (lc *LexCommand) Run() {
 		}
 
 		if nextToken.IsErr() {
-			fmt.Printf("Unexpected error - %v", nextToken.Value)
 			break
 		}
 	}

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/silaspace/aria/handler"
 	"github.com/silaspace/aria/lexer"
 	"github.com/silaspace/aria/parser"
@@ -41,13 +39,13 @@ func (pc *ParseCommand) Run() {
 	reader, err := handler.NewFileReader(pc.input)
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	writer, err := handler.NewFileWriter(pc.output)
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	lex := lexer.NewLexer(reader)
@@ -68,5 +66,4 @@ func (pc *ParseCommand) Run() {
 
 	writer.Close()
 	reader.Close()
-	os.Exit(0)
 }

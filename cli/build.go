@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/silaspace/aria/assembler"
 	"github.com/silaspace/aria/handler"
 )
@@ -19,13 +17,13 @@ func NewBuildCommand(rawArgs []string) *BuildCommand {
 	err := flags.Parse(rawArgs)
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	err = flags.SetOutput(HexExt)
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	// Return command
@@ -40,22 +38,21 @@ func (bc *BuildCommand) Run() {
 	reader, err := handler.NewFileReader(bc.input)
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	writer, err := handler.NewFileWriter(bc.output)
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	asm := assembler.NewAssembler(reader, writer)
 	err = asm.Run()
 
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	asm.Close()
-	os.Exit(0)
 }

@@ -9,6 +9,15 @@ type Command interface {
 	Run()
 }
 
+func exit(err error) {
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	os.Exit(0)
+}
+
 func main() {
 	subcommand := os.Args[1]
 
@@ -33,5 +42,5 @@ func main() {
 		fmt.Printf("Invalid subcommand '%v' - try 'aria help' for more information\n", subcommand)
 	}
 
-	os.Exit(0)
+	exit(nil)
 }
