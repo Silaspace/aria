@@ -78,7 +78,6 @@ const (
 	INC   Mnemonic = "inc"
 	JMP   Mnemonic = "jmp" /* AVRe */
 	LD    Mnemonic = "ld"  /* AVR - TODO */
-	LDD   Mnemonic = "ld"  /* AVR - TODO */
 	LDI   Mnemonic = "ldi"
 	LDS   Mnemonic = "lds"
 	LPM   Mnemonic = "lpm" /* AVR - TODO */ /* AVRe - (LPM Rd, Z)  (LPM Rd, Z+) */
@@ -120,7 +119,6 @@ const (
 	SLEEP Mnemonic = "sleep"
 	SPM   Mnemonic = "spm" /* AVRe */
 	ST    Mnemonic = "st"  /* AVR - TODO */
-	STD   Mnemonic = "std" /* AVR - TODO */
 	STS   Mnemonic = "sts"
 	SUB   Mnemonic = "sub"
 	SUBI  Mnemonic = "subi"

@@ -109,6 +109,23 @@ func ParseLeft(p *Parser) Expr {
 			Func:   function,
 		}
 
+	// Deal specifically with program counter
+	case lexer.TK_REG:
+		p.GetNextToken()
+
+		if token.Value == string(language.PC) {
+			return &Ident{
+				Value: token.Value,
+			}
+		} else {
+			return &ErrorExpr{
+				Value: fmt.Sprintf(
+					"Register %v cannot be used in expression",
+					token.Value,
+				),
+			}
+		}
+
 	case lexer.TK_OP:
 		op, _ := language.GetOp(token.Value)
 

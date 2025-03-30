@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 
+	"github.com/silaspace/aria/language"
 	"github.com/silaspace/aria/lexer"
 )
 
@@ -14,6 +15,14 @@ func ParseArg(p *Parser) Arg {
 		return &Nil{}
 
 	case lexer.TK_REG:
+		// Special case of the program counter
+		if token.Value == string(language.PC) {
+			e := ParseExpr(p, 0)
+			return &ArgExpr{
+				Value: e,
+			}
+		}
+
 		p.GetNextToken() // Consume
 		return &ArgReg{
 			Value: token.Value,

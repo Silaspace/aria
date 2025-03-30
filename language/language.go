@@ -15,7 +15,10 @@ const (
 	INSTR KeywordType = 1
 	DIR   KeywordType = 2
 	FUNC  KeywordType = 3
+	REG   KeywordType = 4
 )
+
+const PC Mnemonic = "pc"
 
 func Exists(key string) KeywordType {
 
@@ -35,6 +38,10 @@ func Exists(key string) KeywordType {
 
 	if _, exists := Functions[mn]; exists {
 		return FUNC
+	}
+
+	if mn == PC {
+		return REG
 	}
 
 	return IDENT

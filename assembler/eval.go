@@ -117,6 +117,11 @@ func EvalDirVal(dirval parser.DirVal, symbolTable map[string]uint64) language.Va
 func EvalExpr(expr parser.Expr, symbolTable map[string]uint64, relativeInstr bool, pc uint64) (uint64, error) {
 	switch expr := expr.(type) {
 	case *parser.Ident:
+		// Return the value of pc if used in an expression
+		if expr.Value == string(language.PC) {
+			return pc, nil
+		}
+
 		val, exists := symbolTable[expr.Value]
 
 		if exists && relativeInstr {

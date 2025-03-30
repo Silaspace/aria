@@ -87,6 +87,10 @@ func (l *Lexer) EmitIdent() {
 	case language.IDENT:
 		l.Emit(TK_IDENT)
 
+	// Named registers i.e pc
+	case language.REG:
+		l.Emit(TK_REG)
+
 	default:
 		l.Emit(TK_ERR)
 	}

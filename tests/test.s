@@ -1,1 +1,2 @@
-add r4, low(!(56 > -3) + 8)
+add r4, r4
+rjmp pc
