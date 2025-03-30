@@ -24,3 +24,39 @@ func DirIdent(p *Parser) DirVal {
 		}
 	}
 }
+
+func DirAssign(p *Parser) DirVal {
+	token := p.GetNextToken()
+
+	switch token.Type {
+	case lexer.TK_IDENT:
+		nextToken := p.GetNextToken()
+
+		switch nextToken.Type {
+		case lexer.TK_EQ:
+			p.GetNextToken() // Consume =
+			expr := ParseExpr(p, 0)
+
+			return &AssignDirVal{
+				Symbol: token.Value,
+				Value:  expr,
+			}
+
+		default:
+			return &ErrorDirVal{
+				fmt.Sprintf(
+					"Expected =, got '%v'",
+					token.Print(),
+				),
+			}
+		}
+
+	default:
+		return &ErrorDirVal{
+			fmt.Sprintf(
+				"Expected ident, got '%v'",
+				token.Print(),
+			),
+		}
+	}
+}

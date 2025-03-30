@@ -83,6 +83,7 @@ func EvalDirVal(dirval parser.DirVal, symbolTable map[string]uint64) language.Va
 		}
 
 	case *parser.ExprListDirVal:
+		panic("UNIMPLEMENTED")
 
 	case *parser.AssignDirVal:
 		val, err := EvalExpr(dirval.Value, symbolTable, false, 0)
@@ -107,10 +108,6 @@ func EvalDirVal(dirval parser.DirVal, symbolTable map[string]uint64) language.Va
 		return &language.Error{
 			Value: fmt.Sprintf("Unknown dirval '%v'", dirval.Fmt()),
 		}
-	}
-
-	return &language.Error{
-		Value: "How did we get here?",
 	}
 }
 

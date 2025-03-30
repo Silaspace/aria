@@ -125,6 +125,24 @@ func Dir(p *Parser) Line {
 			}
 		}
 
+	case language.DIR_EQU:
+		dirval := DirAssign(p)
+
+		switch dirval := dirval.(type) {
+		case *ErrorDirVal:
+			return &Error{
+				Value: dirval.Value,
+				Line:  p.Line,
+			}
+
+		default:
+			return &Directive{
+				Mnemonic: string(mn),
+				Value:    dirval,
+				Line:     p.Line,
+			}
+		}
+
 	default:
 		return &Error{
 			Value: fmt.Sprintf(
