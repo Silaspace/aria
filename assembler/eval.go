@@ -160,6 +160,15 @@ func EvalExpr(expr parser.Expr, symbolTable map[string]uint64, relativeInstr boo
 
 		return expr.Op.Apply(e1, e2), nil
 
+	case *parser.FuncExpr:
+		e1, err := EvalExpr(expr.E1, symbolTable, relativeInstr, pc)
+
+		if err != nil {
+			return 0, err
+		}
+
+		return expr.Func.Apply(e1), nil
+
 	default:
 		return 0, fmt.Errorf("unkown expr type")
 	}
