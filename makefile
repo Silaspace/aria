@@ -6,14 +6,17 @@ wasm:
 
 cli:
 	go mod tidy
-	go build -o ./target/aria ./cli/main.go
+	go build -o ./target/aria ./cli/
 
 run:
 	go mod tidy
 	go run ./cli/main.go
 
 clean:
-	rm -rf ./target/*
+	rm ./target/aria
+	rm ./target/main.wasm
+	rm -r *.hex
+	rm -r *.txt
 
 test:
 	clear
