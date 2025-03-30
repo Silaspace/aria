@@ -97,13 +97,16 @@ func ParseLeft(p *Parser) Expr {
 
 	case lexer.TK_OP:
 		op, _ := language.GetOp(token.Value)
-		tbp := GetPrecedence(token, true)
-		expr := ParseExpr(p, tbp)
 
 		if op.IsUnary() {
+			tbp := GetPrecedence(token, true)
+			p.GetNextToken()
+			expr := ParseExpr(p, tbp)
+
 			return &MonopExpr{
-				Op: op,
-				E1: expr,
+				E1:     expr,
+				Symbol: token.Value,
+				Op:     op,
 			}
 		} else {
 			return &ErrorExpr{
@@ -137,9 +140,10 @@ func ParseOp(p *Parser, left Expr) Expr {
 
 		if op.IsBinary() {
 			return &BinopExpr{
-				E1: left,
-				Op: op,
-				E2: right,
+				E1:     left,
+				E2:     right,
+				Symbol: token.Value,
+				Op:     op,
 			}
 		} else {
 			return &ErrorExpr{

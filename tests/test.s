@@ -1,2 +1,1 @@
-;simple instr
-add r4, -5
+add r4, !(56 > -3) + 8

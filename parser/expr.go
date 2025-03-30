@@ -31,14 +31,16 @@ type Literal struct {
 }
 
 type BinopExpr struct {
-	E1 Expr
-	Op language.Operator
-	E2 Expr
+	E1     Expr
+	E2     Expr
+	Symbol string
+	Op     language.Operator
 }
 
 type MonopExpr struct {
-	Op language.Operator
-	E1 Expr
+	E1     Expr
+	Symbol string
+	Op     language.Operator
 }
 
 func (e *ErrorExpr) Type() ExprType {
