@@ -26,7 +26,7 @@ const (
 	ADD   Mnemonic = "add"
 	AND   Mnemonic = "and"
 	ANDI  Mnemonic = "andi"
-	ADIW  Mnemonic = "andw" /* AVRe */
+	ADIW  Mnemonic = "andw" /* AVR - TODO */
 	ASR   Mnemonic = "asr"
 	BCLR  Mnemonic = "bclr"
 	BLD   Mnemonic = "bld"
@@ -77,14 +77,15 @@ const (
 	IN    Mnemonic = "in"
 	INC   Mnemonic = "inc"
 	JMP   Mnemonic = "jmp" /* AVRe */
-	LD    Mnemonic = "ld"
-	LDD   Mnemonic = "ld" /* AVRe */
+	LD    Mnemonic = "ld"  /* AVR - TODO */
+	LDD   Mnemonic = "ld"  /* AVR - TODO */
 	LDI   Mnemonic = "ldi"
 	LDS   Mnemonic = "lds"
-	LPM   Mnemonic = "lpm" /* AVRe */
+	LPM   Mnemonic = "lpm" /* AVR - TODO */ /* AVRe - (LPM Rd, Z)  (LPM Rd, Z+) */
 	LSL   Mnemonic = "lsl"
 	LSR   Mnemonic = "lsr"
 	MOV   Mnemonic = "mov"
+	MOVW  Mnemonic = "movw" /* AVRe */
 	NEG   Mnemonic = "neg"
 	NOP   Mnemonic = "nop"
 	OR    Mnemonic = "or"
@@ -103,7 +104,7 @@ const (
 	SBI   Mnemonic = "sbi"
 	SBIC  Mnemonic = "sbic"
 	SBIS  Mnemonic = "sbis"
-	SBIW  Mnemonic = "sbiw" /* AVRe */
+	SBIW  Mnemonic = "sbiw" /* AVR - TODO */
 	SBR   Mnemonic = "sbr"
 	SBRC  Mnemonic = "sbrc"
 	SBRS  Mnemonic = "sbrs"
@@ -118,8 +119,8 @@ const (
 	SEZ   Mnemonic = "sez"
 	SLEEP Mnemonic = "sleep"
 	SPM   Mnemonic = "spm" /* AVRe */
-	ST    Mnemonic = "st"
-	STD   Mnemonic = "std" /* AVRe */
+	ST    Mnemonic = "st"  /* AVR - TODO */
+	STD   Mnemonic = "std" /* AVR - TODO */
 	STS   Mnemonic = "sts"
 	SUB   Mnemonic = "sub"
 	SUBI  Mnemonic = "subi"
