@@ -4,3 +4,4 @@ target/*
 .vscode/*
 !.vscode/extensions.json
 .DS_Store
+tests/test.s
