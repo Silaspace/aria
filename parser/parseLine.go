@@ -139,7 +139,7 @@ func Dir(p *Parser) Line {
 			return &Directive{
 				Mnemonic: string(mn),
 				Value:    dirval,
-				Line:     p.Line,
+				Line:     p.Line - 1,
 			}
 		}
 
@@ -185,7 +185,7 @@ func Instr(p *Parser) Line {
 				Mnemonic: token.Value,
 				Op1:      arg1,
 				Op2:      arg2,
-				Line:     p.Line,
+				Line:     p.Line - 1,
 			}
 		}
 
@@ -194,7 +194,7 @@ func Instr(p *Parser) Line {
 			Mnemonic: token.Value,
 			Op1:      arg1,
 			Op2:      &Nil{},
-			Line:     p.Line,
+			Line:     p.Line - 1,
 		}
 
 	case lexer.TK_LINE:

@@ -90,7 +90,7 @@ func (a *Assembler) Run() error {
 			dir, err := language.GetDir(line.Mnemonic)
 
 			if err != nil {
-				return err
+				return a.wrap(err)
 			}
 
 			val := EvalDirVal(line.Value, a.Symbols)
@@ -100,14 +100,14 @@ func (a *Assembler) Run() error {
 			err := a.AddSymbol(line.Value, a.PC)
 
 			if err != nil {
-				return err
+				return a.wrap(err)
 			}
 
 		case *parser.Instruction:
 			instr, err := language.GetInstr(line.Mnemonic, &a.Device)
 
 			if err != nil {
-				return err
+				return a.wrap(err)
 			}
 
 			if instr.IsLong() {
@@ -149,7 +149,7 @@ func (a *Assembler) Run() error {
 			instr, err := language.GetInstr(line.Mnemonic, &a.Device)
 
 			if err != nil {
-				return err
+				return a.wrap(err)
 			}
 
 			relative := instr.IsRelative()
@@ -158,14 +158,14 @@ func (a *Assembler) Run() error {
 			err = instr.Apply1(op1)
 
 			if err != nil {
-				return err
+				return a.wrap(err)
 			}
 
 			op2 := EvalArg(line.Op2, a.Symbols, relative, a.PC)
 			err = instr.Apply2(op2)
 
 			if err != nil {
-				return err
+				return a.wrap(err)
 			}
 
 			if instr.IsLong() {
@@ -178,7 +178,7 @@ func (a *Assembler) Run() error {
 			err = a.Writer.Write(bytes)
 
 			if err != nil {
-				return err
+				return a.wrap(err)
 			}
 
 		case *parser.Error:
@@ -220,4 +220,9 @@ func (a *Assembler) error(fstr string, args ...interface{}) error {
 	msg := fmt.Sprintf(fstr, args...)
 	err := fmt.Errorf("%v on line %v", msg, a.Line)
 	return err
+}
+
+func (a *Assembler) wrap(err error) error {
+	msg := err.Error()
+	return a.error(msg)
 }
