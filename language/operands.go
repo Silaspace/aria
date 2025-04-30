@@ -5,6 +5,24 @@ import (
 	"fmt"
 )
 
+/* ------- Named Registers ------- */
+
+type Register struct{}
+
+const (
+	PC Mnemonic = "pc"
+	X  Mnemonic = "x"
+	Y  Mnemonic = "y"
+	Z  Mnemonic = "z"
+)
+
+var Registers = map[Mnemonic]Register{
+	PC: {},
+	X:  {},
+	Y:  {},
+	Z:  {},
+}
+
 /* -------- Miscellaneous -------- */
 
 /*

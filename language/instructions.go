@@ -21,12 +21,22 @@ const (
 	RELATIVE Flag = 1 << 1
 )
 
+/*
+TODO
+- ADIW
+- LD
+- LPM
+- SBIW
+- ST
+
+*/
+
 const (
 	ADC   Mnemonic = "adc"
 	ADD   Mnemonic = "add"
 	AND   Mnemonic = "and"
 	ANDI  Mnemonic = "andi"
-	ADIW  Mnemonic = "andw" /* AVR - TODO */
+	ADIW  Mnemonic = "adiw" /* AVR - TODO */
 	ASR   Mnemonic = "asr"
 	BCLR  Mnemonic = "bclr"
 	BLD   Mnemonic = "bld"
@@ -34,7 +44,6 @@ const (
 	BRBS  Mnemonic = "brbs"
 	BRCC  Mnemonic = "brcc"
 	BRCS  Mnemonic = "brcs"
-	BREAK Mnemonic = "break" /* AVRe */
 	BREQ  Mnemonic = "breq"
 	BRGE  Mnemonic = "brge"
 	BRHC  Mnemonic = "brhc"
@@ -53,7 +62,6 @@ const (
 	BRVS  Mnemonic = "brvs"
 	BSET  Mnemonic = "bset"
 	BST   Mnemonic = "bst"
-	CALL  Mnemonic = "call" /* AVRe */
 	CBI   Mnemonic = "cbi"
 	CBR   Mnemonic = "cbr"
 	CLC   Mnemonic = "clc"
@@ -84,7 +92,6 @@ const (
 	LSL   Mnemonic = "lsl"
 	LSR   Mnemonic = "lsr"
 	MOV   Mnemonic = "mov"
-	MOVW  Mnemonic = "movw" /* AVRe */
 	NEG   Mnemonic = "neg"
 	NOP   Mnemonic = "nop"
 	OR    Mnemonic = "or"
@@ -117,8 +124,7 @@ const (
 	SEV   Mnemonic = "sev"
 	SEZ   Mnemonic = "sez"
 	SLEEP Mnemonic = "sleep"
-	SPM   Mnemonic = "spm" /* AVRe */
-	ST    Mnemonic = "st"  /* AVR - TODO */
+	ST    Mnemonic = "st" /* AVR - TODO */
 	STS   Mnemonic = "sts"
 	SUB   Mnemonic = "sub"
 	SUBI  Mnemonic = "subi"

@@ -18,8 +18,6 @@ const (
 	REG   KeywordType = 4
 )
 
-const PC Mnemonic = "pc"
-
 func Exists(key string) KeywordType {
 
 	mn := Mnemonic(key)
@@ -40,7 +38,7 @@ func Exists(key string) KeywordType {
 		return FUNC
 	}
 
-	if mn == PC {
+	if _, exists := Registers[mn]; exists {
 		return REG
 	}
 
