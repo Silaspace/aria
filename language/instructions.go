@@ -179,6 +179,17 @@ var AVR = map[Mnemonic]Instruction{
 	},
 
 	/*
+		Syntax    ADIW Rd+1:Rd, K
+		Encoding  1001 0110 KKdd KKKK
+	*/
+	ADIW: {
+		Base:  0x9600,
+		Op1:   R_pair,
+		Op2:   k_6_ii,
+		Flags: 0,
+	},
+
+	/*
 		Syntax    ASR Rd
 		Encoding  1001 010d dddd 0101
 	*/

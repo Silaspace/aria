@@ -219,6 +219,27 @@ func Rr(base uint64, op Value) (uint64, error) {
 	}
 }
 
+/*
+Name         Rd+1:Rd
+Description  upper register pairs - d ∈ {24,26,28,30}
+Encoding     0000 0000 0011 0000
+*/
+func R_pair(base uint64, op Value) (uint64, error) {
+	switch op := op.(type) {
+	case *Reg:
+		if op.Value > 31 {
+			return 0, errors.New("register specified does not exist")
+		}
+		return base | (op.Value & 0x00F) | ((op.Value << 5) & 0x0200), nil
+
+	case *Error:
+		return 0, errors.New(op.Value)
+
+	default:
+		return 0, fmt.Errorf("expected reg, got %v", op.Fmt())
+	}
+}
+
 /* -------- Constants -------- */
 
 /*
@@ -335,10 +356,31 @@ Encoding     0000 0011 1111 1000
 func k_6(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
 	case *Int:
-		if int16(op.Value) > 64 {
+		if int16(op.Value) > 63 {
 			return 0, errors.New("k larger than 6 bits")
 		}
 		return base | (op.Value & 0x03F8), nil
+
+	case *Error:
+		return 0, errors.New(op.Value)
+
+	default:
+		return 0, fmt.Errorf("expected int, got %+v", op.Fmt())
+	}
+}
+
+/*
+Name         k_6_ii
+Description  6 bit constant for add immediate word (ADIW)
+Encoding     0000 0000 1100 1111
+*/
+func k_6_ii(base uint64, op Value) (uint64, error) {
+	switch op := op.(type) {
+	case *Int:
+		if int16(op.Value) > 63 {
+			return 0, errors.New("k larger than 6 bits")
+		}
+		return base | (op.Value & 0x00CF), nil
 
 	case *Error:
 		return 0, errors.New(op.Value)

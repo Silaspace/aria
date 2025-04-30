@@ -41,6 +41,10 @@ func (r *ArgReg) Fmt() string {
 	return fmt.Sprintf("r%v", r.Value)
 }
 
+func (r *ArgRegPair) Fmt() string {
+	return fmt.Sprintf("r%v+1:r%v", r.Value, r.Value)
+}
+
 func (e *ArgExpr) Fmt() string {
 	return e.Value.Fmt()
 }

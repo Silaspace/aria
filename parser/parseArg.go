@@ -23,9 +23,34 @@ func ParseArg(p *Parser) Arg {
 			}
 		}
 
-		p.GetNextToken() // Consume
-		return &ArgReg{
-			Value: token.Value,
+		nextToken := p.GetNextToken()
+
+		switch nextToken.Type {
+		case lexer.TK_COLON:
+			thirdToken := p.GetNextToken()
+
+			p.GetNextToken() // Consume
+
+			switch thirdToken.Type {
+			case lexer.TK_REG:
+				return &ArgRegPair{
+					Value: thirdToken.Value,
+				}
+
+			default:
+				return &ArgError{
+					Value: fmt.Sprintf(
+						"Expected register, got '%v'",
+						thirdToken.Type,
+					),
+				}
+
+			}
+
+		default:
+			return &ArgReg{
+				Value: token.Value,
+			}
 		}
 
 	case lexer.TK_INSTR, lexer.TK_DIR:
