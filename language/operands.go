@@ -27,8 +27,8 @@ var Registers = map[Mnemonic]Register{
 
 /*
 Name         A
-Description  something
-Encoding     0000 0000 1111 1000
+Description  5-bit memory address
+Encoding     0000 0000 aaaa a000
 */
 func A_5(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -48,8 +48,8 @@ func A_5(base uint64, op Value) (uint64, error) {
 
 /*
 Name         A
-Description  something
-Encoding     0000 0110 0000 1111
+Description  6-bit memory address
+Encoding     0000 0aa0 0000 aaaa
 */
 func A_6(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -70,7 +70,7 @@ func A_6(base uint64, op Value) (uint64, error) {
 /*
 Name         b
 Description  bit in register
-Encoding     0000 0000 0000 0111
+Encoding     0000 0000 0000 0bbb
 */
 func b(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -91,7 +91,7 @@ func b(base uint64, op Value) (uint64, error) {
 /*
 Name         s
 Description  bit in status register
-Encoding     0000 0000 0111 0000
+Encoding     0000 0000 0sss 0000
 */
 func s(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -114,7 +114,7 @@ func s(base uint64, op Value) (uint64, error) {
 /*
 Name         Rd
 Description  desitination register
-Encoding     0000 0001 1111 0000
+Encoding     0000 000d dddd 0000
 */
 func Rd(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -135,7 +135,7 @@ func Rd(base uint64, op Value) (uint64, error) {
 /*
 Name         R
 Description  desitination + source register
-Encoding     0000 0011 1111 1111
+Encoding     0000 00rd dddd rrrr
 */
 func R(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -156,7 +156,7 @@ func R(base uint64, op Value) (uint64, error) {
 /*
 Name         Rd_high
 Description  desitination register (r16 to r31)
-Encoding     0000 0000 1111 0000
+Encoding     0000 0000 dddd 0000
 */
 func Rd_high(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -180,7 +180,7 @@ func Rd_high(base uint64, op Value) (uint64, error) {
 /*
 Name         R_long
 Description  encode register in 32 bit instructions
-Encoding     0000 0001 1111 0000 0000 0000 0000 0000
+Encoding     0000 000r rrrr 0000 0000 0000 0000 0000
 */
 func R_long(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -201,7 +201,7 @@ func R_long(base uint64, op Value) (uint64, error) {
 /*
 Name         Rr
 Description  return register
-Encoding     0000 0010 0000 1111
+Encoding     0000 00r0 0000 rrrr
 */
 func Rr(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -222,21 +222,24 @@ func Rr(base uint64, op Value) (uint64, error) {
 /*
 Name         Rd+1:Rd
 Description  upper register pairs - d ∈ {24,26,28,30}
-Encoding     0000 0000 0011 0000
+Encoding     0000 0000 00dd 0000
 */
 func R_pair(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
-	case *Reg:
-		if op.Value > 31 {
-			return 0, errors.New("register specified does not exist")
+	case *RegPair:
+		switch op.Value {
+		case 24, 26, 28, 30:
+			return base | ((op.Value << 3) & 0x0030), nil
+
+		default:
+			return 0, errors.New("register pair specified does not exist")
 		}
-		return base | (op.Value & 0x00F) | ((op.Value << 5) & 0x0200), nil
 
 	case *Error:
 		return 0, errors.New(op.Value)
 
 	default:
-		return 0, fmt.Errorf("expected reg, got %v", op.Fmt())
+		return 0, fmt.Errorf("expected reg pair, got %v", op.Fmt())
 	}
 }
 
@@ -245,7 +248,7 @@ func R_pair(base uint64, op Value) (uint64, error) {
 /*
 Name         k_22
 Description  22 bit constant for long jmp instructions
-Encoding     0000 0001 1111 0001 1111 1111 1111 1111
+Encoding     0000 000k kkkk 000k kkkk kkkk kkkk kkkk
 */
 func k_22(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -266,7 +269,7 @@ func k_22(base uint64, op Value) (uint64, error) {
 /*
 Name         k_16
 Description  16 bit constant for long instructions
-Encoding     1111 1111 1111 1111
+Encoding     kkkk kkkk kkkk kkkk
 */
 func k_16(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -287,7 +290,7 @@ func k_16(base uint64, op Value) (uint64, error) {
 /*
 Name         k_12
 Description  12 bit constant for relative jump
-Encoding     0000 1111 1111 1111
+Encoding     0000 kkkk kkkk kkkk
 */
 func k_12(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -308,7 +311,7 @@ func k_12(base uint64, op Value) (uint64, error) {
 /*
 Name         k_8
 Description  8 bit constant for immediate
-Encoding     0000 1111 0000 1111
+Encoding     0000 kkkk 0000 kkkk
 */
 func k_8(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -329,7 +332,7 @@ func k_8(base uint64, op Value) (uint64, error) {
 /*
 Name         k_8_compliment
 Description  8 bit constant for immediate, complimented
-Encoding     0000 1111 0000 1111
+Encoding     0000 kkkk 0000 kkkk
 */
 func k_8_compliment(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -351,7 +354,7 @@ func k_8_compliment(base uint64, op Value) (uint64, error) {
 /*
 Name         k_6
 Description  6 bit constant for relative jump
-Encoding     0000 0011 1111 1000
+Encoding     0000 00kk kkkk k000
 */
 func k_6(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {
@@ -372,7 +375,7 @@ func k_6(base uint64, op Value) (uint64, error) {
 /*
 Name         k_6_ii
 Description  6 bit constant for add immediate word (ADIW)
-Encoding     0000 0000 1100 1111
+Encoding     0000 0000 kk00 kkkk
 */
 func k_6_ii(base uint64, op Value) (uint64, error) {
 	switch op := op.(type) {

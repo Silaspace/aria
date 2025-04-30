@@ -10,13 +10,14 @@ type Value interface {
 }
 
 const (
-	NilType    ValType = 0
-	ErrType    ValType = 1
-	IdentType  ValType = 2
-	RegType    ValType = 3
-	IntType    ValType = 4
-	ListType   ValType = 5
-	AssignType ValType = 6
+	NilType     ValType = 0
+	ErrType     ValType = 1
+	IdentType   ValType = 2
+	RegType     ValType = 3
+	RegPairType ValType = 4
+	IntType     ValType = 5
+	ListType    ValType = 6
+	AssignType  ValType = 7
 )
 
 type Nil struct{}
@@ -30,6 +31,10 @@ type Ident struct {
 }
 
 type Reg struct {
+	Value uint64
+}
+
+type RegPair struct {
 	Value uint64
 }
 
@@ -62,6 +67,10 @@ func (r *Reg) Type() ValType {
 	return RegType
 }
 
+func (r *RegPair) Type() ValType {
+	return RegPairType
+}
+
 func (i *Int) Type() ValType {
 	return IntType
 }
@@ -88,6 +97,10 @@ func (i *Ident) Fmt() string {
 
 func (r *Reg) Fmt() string {
 	return fmt.Sprintf("reg (%v)", r.Value)
+}
+
+func (r *RegPair) Fmt() string {
+	return fmt.Sprintf("reg (%v : %v)", r.Value+1, r.Value)
 }
 
 func (i *Int) Fmt() string {

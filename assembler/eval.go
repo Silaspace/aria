@@ -26,6 +26,19 @@ func EvalArg(arg parser.Arg, symbolTable map[string]uint64, relativeInstr bool, 
 			Value: regVal,
 		}
 
+	case *parser.ArgRegPair:
+		regVal, err := strconv.ParseUint(arg.Value, 10, 32)
+
+		if err != nil {
+			return &language.Error{
+				Value: err.Error(),
+			}
+		}
+
+		return &language.RegPair{
+			Value: regVal,
+		}
+
 	case *parser.ArgExpr:
 		val, err := EvalExpr(arg.Value, symbolTable, relativeInstr, pc)
 
