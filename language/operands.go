@@ -427,9 +427,13 @@ Encoding
 func ld_pointer(base uint64, rp Value) (uint64, error) {
 	switch rp := rp.(type) {
 	case *RegPointer:
+		if rp.Op == Disp {
+			return 0, errors.New("displacement using ld is not supported")
+		}
+
 		reg := base >> 4
 
-		if rp.Op == PostInc || rp.Op == PreDec {
+		if rp.Op != None {
 			switch rp.Value {
 			case X:
 				if reg == 26 || reg == 27 {
@@ -493,6 +497,10 @@ Encoding
 func ldd_pointer(base uint64, rp Value) (uint64, error) {
 	switch rp := rp.(type) {
 	case *RegPointer:
+		if rp.Op != Disp {
+			return 0, errors.New("expected displacement")
+		}
+
 		if rp.Disp > 63 {
 			return 0, errors.New("displacement larger than 6 bits")
 		}
@@ -540,6 +548,10 @@ Encoding
 func st_pointer(base uint64, rp Value) (uint64, error) {
 	switch rp := rp.(type) {
 	case *RegPointer:
+		if rp.Op == Disp {
+			return 0, errors.New("displacement using ld is not supported")
+		}
+
 		/*
 			p = X (3)
 			  | Y (2)
@@ -583,12 +595,14 @@ Encoding
 
 	(Y) 10q0 qq10 0000 1qqq
 	(Z) 10q0 qq10 0000 0qqq
-
-	12 82 -> 1000 0010 0001 0010
 */
 func std_pointer(base uint64, rp Value) (uint64, error) {
 	switch rp := rp.(type) {
 	case *RegPointer:
+		if rp.Op != Disp {
+			return 0, errors.New("expected displacement")
+		}
+
 		if rp.Disp > 63 {
 			return 0, errors.New("displacement larger than 6 bits")
 		}
@@ -615,7 +629,7 @@ func std_pointer(base uint64, rp Value) (uint64, error) {
 }
 
 /*
-Name         Rd
+Name         Rd_st
 Description  desitination register (with undefined check for ST)
 Encoding     0000 000d dddd 0000
 */
