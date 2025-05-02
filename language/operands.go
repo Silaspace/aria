@@ -433,15 +433,15 @@ func ld_pointer(base uint64, rp Value) (uint64, error) {
 			switch rp.Value {
 			case X:
 				if reg == 26 || reg == 27 {
-					return 0, errors.New("ld r26 x+ and ld r27 x+ are undefined")
+					return 0, errors.New("ld (r26|r27) (x+|-x) is undefined")
 				}
 			case Y:
 				if reg == 28 || reg == 29 {
-					return 0, errors.New("ld r28 y+ and ld r29 y+ are undefined")
+					return 0, errors.New("ld (r28|r29) (y+|-y) is undefined")
 				}
 			case Z:
 				if reg == 30 || reg == 31 {
-					return 0, errors.New("ld r30 z+ and ld r31 z+ are undefined")
+					return 0, errors.New("ld (r30|r31) (z+|-z) is undefined")
 				}
 			}
 		}
@@ -625,15 +625,15 @@ func Rd_st(base uint64, op Value) (uint64, error) {
 			switch rpValue {
 			case 3: // X
 				if op.Value == 26 || op.Value == 27 {
-					return 0, errors.New("ld r26 x+ and ld r27 x+ are undefined")
+					return 0, errors.New("st (x+|-x) (r26|r27) is undefined")
 				}
 			case 2: // Y
 				if op.Value == 28 || op.Value == 29 {
-					return 0, errors.New("ld r28 y+ and ld r29 y+ are undefined")
+					return 0, errors.New("st (y+|-y) (r2|r29) is undefined")
 				}
 			case 0: // Z
 				if op.Value == 30 || op.Value == 31 {
-					return 0, errors.New("ld r30 z+ and ld r31 z+ are undefined")
+					return 0, errors.New("st (z+|-z) (r30|r31) is undefined")
 				}
 			}
 		}

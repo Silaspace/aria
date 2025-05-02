@@ -1190,7 +1190,7 @@ var AVR = map[Mnemonic]Instruction{
 	ST: {
 		Base:  0x8200,
 		Op1:   st_pointer,
-		Op2:   Rd,
+		Op2:   Rd_st,
 		Flags: 0,
 	},
 
