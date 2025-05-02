@@ -14,30 +14,7 @@ func EvalArg(arg parser.Arg, symbolTable map[string]uint64, relativeInstr bool, 
 		return &language.Nil{}
 
 	case *parser.ArgReg:
-		regVal, err := strconv.ParseUint(arg.Value, 10, 32)
-
-		if err != nil {
-			return &language.Error{
-				Value: err.Error(),
-			}
-		}
-
-		return &language.Reg{
-			Value: regVal,
-		}
-
-	case *parser.ArgRegPair:
-		regVal, err := strconv.ParseUint(arg.Value, 10, 32)
-
-		if err != nil {
-			return &language.Error{
-				Value: err.Error(),
-			}
-		}
-
-		return &language.RegPair{
-			Value: regVal,
-		}
+		return EvalReg(arg.Value)
 
 	case *parser.ArgExpr:
 		val, err := EvalExpr(arg.Value, symbolTable, relativeInstr, pc)
@@ -186,5 +163,48 @@ func EvalExpr(expr parser.Expr, symbolTable map[string]uint64, relativeInstr boo
 
 	default:
 		return 0, fmt.Errorf("unkown expr type")
+	}
+}
+
+func EvalReg(reg parser.Reg) language.Value {
+	switch reg := reg.(type) {
+	case *parser.Register:
+		regVal, err := strconv.ParseUint(reg.Value, 10, 32)
+
+		if err != nil {
+			return &language.Error{
+				Value: err.Error(),
+			}
+		}
+
+		return &language.Reg{
+			Value: regVal,
+		}
+
+	case *parser.RegPair:
+		regVal, err := strconv.ParseUint(reg.Value, 10, 32)
+
+		if err != nil {
+			return &language.Error{
+				Value: err.Error(),
+			}
+		}
+
+		return &language.RegPair{
+			Value: regVal,
+		}
+
+	case *parser.PointerReg:
+		panic("UNIMPLEMENTED")
+
+	case *parser.RegErr:
+		return &language.Error{
+			Value: reg.Value,
+		}
+
+	default:
+		return &language.Error{
+			Value: fmt.Sprintf("Unknown reg '%v'", reg.Fmt()),
+		}
 	}
 }
