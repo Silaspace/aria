@@ -406,7 +406,7 @@ func k_6_ii(base uint64, op Value) (uint64, error) {
 */
 
 /*
-Name         ld__pointer
+Name         ld_pointer
 Description  encodes X, Y, or Z in unchanged, postinc or predec form for LD
 Encoding
 
@@ -483,7 +483,7 @@ func ld_pointer(base uint64, rp Value) (uint64, error) {
 }
 
 /*
-Name         ldd__pointer
+Name         ldd_pointer
 Description  encodes Y or Z in displacement form for LDD
 Encoding
 
@@ -515,7 +515,7 @@ func ldd_pointer(base uint64, rp Value) (uint64, error) {
 }
 
 /*
-Name         st__pointer
+Name         st_pointer
 Description  encodes X, Y, or Z in unchanged, postinc or predec form for ST
 Encoding
 
@@ -573,7 +573,7 @@ func st_pointer(base uint64, rp Value) (uint64, error) {
 }
 
 /*
-Name         std__pointer
+Name         std_pointer
 Description  encodes Y or Z in displacement form for STD
 Encoding
 
@@ -601,5 +601,49 @@ func std_pointer(base uint64, rp Value) (uint64, error) {
 
 	default:
 		return 0, fmt.Errorf("expected reg pointer, got %+v", rp.Fmt())
+	}
+}
+
+/*
+Name         Rd
+Description  desitination register (with undefined check for ST)
+Encoding     0000 000d dddd 0000
+*/
+func Rd_st(base uint64, op Value) (uint64, error) {
+	switch op := op.(type) {
+	case *Reg:
+
+		if op.Value > 31 {
+			return 0, errors.New("register specified does not exist")
+		}
+
+		// Check undefinedness
+		rpOp := base & 0x0003
+		rpValue := (base >> 2) & 0x0003
+
+		if rpOp != 0 {
+			switch rpValue {
+			case 3: // X
+				if op.Value == 26 || op.Value == 27 {
+					return 0, errors.New("ld r26 x+ and ld r27 x+ are undefined")
+				}
+			case 2: // Y
+				if op.Value == 28 || op.Value == 29 {
+					return 0, errors.New("ld r28 y+ and ld r29 y+ are undefined")
+				}
+			case 0: // Z
+				if op.Value == 30 || op.Value == 31 {
+					return 0, errors.New("ld r30 z+ and ld r31 z+ are undefined")
+				}
+			}
+		}
+
+		return base | ((op.Value << 4) & 0x01F0), nil
+
+	case *Error:
+		return 0, errors.New(op.Value)
+
+	default:
+		return 0, fmt.Errorf("expected reg, got %v", op.Fmt())
 	}
 }
