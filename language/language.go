@@ -105,3 +105,13 @@ func GetFunc(key string) (Function, error) {
 
 	return function, nil
 }
+
+func IsPC(key string) bool {
+	mn := Mnemonic(key)
+	return mn == PC
+}
+
+func IsAdd(key string) bool {
+	mn := Mnemonic(key)
+	return mn == OP_ADD
+}

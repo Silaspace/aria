@@ -8,11 +8,10 @@ type Arg interface {
 }
 
 const (
-	NilArg     ArgType = 0
-	RegArg     ArgType = 1
-	RegPairArg ArgType = 2
-	ExprArg    ArgType = 3
-	ErrArg     ArgType = 4
+	NilArg  ArgType = 0
+	RegArg  ArgType = 1
+	ExprArg ArgType = 2
+	ErrArg  ArgType = 3
 )
 
 type Nil struct{}
@@ -22,11 +21,7 @@ type ArgError struct {
 }
 
 type ArgReg struct {
-	Value string
-}
-
-type ArgRegPair struct {
-	Value string
+	Value Reg
 }
 
 type ArgExpr struct {
@@ -43,10 +38,6 @@ func (a *ArgError) Type() ArgType {
 
 func (r *ArgReg) Type() ArgType {
 	return RegArg
-}
-
-func (r *ArgRegPair) Type() ArgType {
-	return RegPairArg
 }
 
 func (e *ArgExpr) Type() ArgType {

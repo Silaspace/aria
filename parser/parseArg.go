@@ -20,42 +20,17 @@ func ParseArg(p *Parser) Arg {
 		return &Nil{}
 
 	case lexer.TK_REG:
-		// Special case of the program counter
-		if token.Value == string(language.PC) {
+		// Special case of the program counter, should return Expr type
+		if language.IsPC(token.Value) {
 			e := ParseExpr(p, 0)
 			return &ArgExpr{
 				Value: e,
 			}
 		}
 
-		nextToken := p.GetNextToken()
-
-		switch nextToken.Type {
-		case lexer.TK_COLON:
-			thirdToken := p.GetNextToken()
-
-			p.GetNextToken() // Consume
-
-			switch thirdToken.Type {
-			case lexer.TK_REG:
-				return &ArgRegPair{
-					Value: thirdToken.Value,
-				}
-
-			default:
-				return &ArgError{
-					Value: fmt.Sprintf(
-						"Expected register, got '%v'",
-						thirdToken.Type,
-					),
-				}
-
-			}
-
-		default:
-			return &ArgReg{
-				Value: token.Value,
-			}
+		r := ParseReg(p)
+		return &ArgReg{
+			Value: r,
 		}
 
 	case lexer.TK_INSTR, lexer.TK_DIR:
