@@ -21,15 +21,6 @@ const (
 	RELATIVE Flag = 1 << 1
 )
 
-/*
-TODO
-- LD
-- LPM
-- SBIW
-- ST
-
-*/
-
 const (
 	ADC   Mnemonic = "adc"
 	ADD   Mnemonic = "add"
@@ -88,7 +79,7 @@ const (
 	LDD   Mnemonic = "ldd"
 	LDI   Mnemonic = "ldi"
 	LDS   Mnemonic = "lds"
-	LPM   Mnemonic = "lpm" /* AVR - TODO */ /* AVRe - (LPM Rd, Z)  (LPM Rd, Z+) */
+	LPM   Mnemonic = "lpm"
 	LSL   Mnemonic = "lsl"
 	LSR   Mnemonic = "lsr"
 	MOV   Mnemonic = "mov"
@@ -110,7 +101,7 @@ const (
 	SBI   Mnemonic = "sbi"
 	SBIC  Mnemonic = "sbic"
 	SBIS  Mnemonic = "sbis"
-	SBIW  Mnemonic = "sbiw" /* AVR - TODO */
+	SBIW  Mnemonic = "sbiw"
 	SBR   Mnemonic = "sbr"
 	SBRC  Mnemonic = "sbrc"
 	SBRS  Mnemonic = "sbrs"
@@ -124,7 +115,8 @@ const (
 	SEV   Mnemonic = "sev"
 	SEZ   Mnemonic = "sez"
 	SLEEP Mnemonic = "sleep"
-	ST    Mnemonic = "st" /* AVR - TODO */
+	ST    Mnemonic = "st"
+	STD   Mnemonic = "std"
 	STS   Mnemonic = "sts"
 	SUB   Mnemonic = "sub"
 	SUBI  Mnemonic = "subi"
@@ -732,9 +724,9 @@ var AVR = map[Mnemonic]Instruction{
 					(ix)   1001 000d dddd 1010
 	*/
 	LD: {
-		Base:  0x0000,
+		Base:  0x8000,
 		Op1:   Rd,
-		Op2:   Pointer_ld,
+		Op2:   ld_pointer,
 		Flags: 0,
 	},
 
@@ -746,9 +738,9 @@ var AVR = map[Mnemonic]Instruction{
 					(ii)   10q0 qq0d dddd 0qqq
 	*/
 	LDD: {
-		Base:  0x0000,
+		Base:  0x8000,
 		Op1:   Rd,
-		Op2:   Disp_ld,
+		Op2:   ldd_pointer,
 		Flags: 0,
 	},
 
@@ -772,6 +764,17 @@ var AVR = map[Mnemonic]Instruction{
 		Op1:   R_long,
 		Op2:   k_16,
 		Flags: LONG,
+	},
+
+	/*
+		Syntax    LPM
+		Encoding  1001 0101 1100 1000
+	*/
+	LPM: {
+		Base:  0x95C8,
+		Op1:   nil,
+		Op2:   nil,
+		Flags: 0,
 	},
 
 	/*
@@ -1006,6 +1009,17 @@ var AVR = map[Mnemonic]Instruction{
 	},
 
 	/*
+		Syntax    SBIW Rd+1:Rd, K
+		Encoding  1001 0111 KKdd KKKK
+	*/
+	SBIW: {
+		Base:  0x9B00,
+		Op1:   R_pair,
+		Op2:   k_6_ii,
+		Flags: 0,
+	},
+
+	/*
 		Syntax    SBR Rd, K
 		Encoding  0110 KKKK dddd KKKK
 	*/
@@ -1149,16 +1163,50 @@ var AVR = map[Mnemonic]Instruction{
 	},
 
 	/*
-			Syntax    ST X+ Rr
-			Encoding  1001 001d dddd 0000 kkkk kkkk kkkk kkkk
+		Syntax		(i)    ST X,  Rd
+					(ii)   ST X+, Rd
+					(iii)  ST -X, Rd
 
-		ST: {
-			Base:  0x92000000,
-			Op1:   k_16,
-			Op2:   R_long,
-			Flags: LONG,
-		},
+					(iv)   ST Y,  Rd
+					(v)    ST Y+, Rd
+					(vi)   ST -Y, Rd
+
+					(vii)  ST Z,  Rd
+					(viii) ST Z+, Rd
+					(ix)   ST -Z, Rd
+
+		Encoding	(i)    1001 001r rrrr 1100
+					(ii)   1001 001r rrrr 1101
+					(iii)  1001 001r rrrr 1110
+
+					(iv)   1000 001r rrrr 1000
+					(v)    1000 001r rrrr 1000
+					(vi)   1001 001r rrrr 1010
+
+					(vi)   1000 001r rrrr 0000
+					(viii) 1001 001r rrrr 0001
+					(ix)   1001 001r rrrr 0010
 	*/
+	ST: {
+		Base:  0x8200,
+		Op1:   st_pointer,
+		Op2:   Rd,
+		Flags: 0,
+	},
+
+	/*
+		Syntax		(i)    STD Y+q,  Rd
+					(ii)   STD Z+q, Rd
+
+		Encoding	(i)    10q0 qq1r rrrr 1qqq
+					(ii)   10q0 qq1r rrrr 0qqq
+	*/
+	STD: {
+		Base:  0x8200,
+		Op1:   std_pointer,
+		Op2:   Rd,
+		Flags: 0,
+	},
 
 	/*
 		Syntax    STS k, Rd

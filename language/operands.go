@@ -9,12 +9,6 @@ import (
 
 type Register struct{}
 
-type PointerKey struct {
-	instr Mnemonic
-	reg   Mnemonic
-	op    PointerOp
-}
-
 const (
 	PC Mnemonic = "pc"
 	X  Mnemonic = "x"
@@ -27,20 +21,6 @@ var Registers = map[Mnemonic]Register{
 	X:  {},
 	Y:  {},
 	Z:  {},
-}
-
-var PointerInstructions = map[PointerKey]uint64{
-	{LD, X, None}:    0x900C, // 1001 0000 0000 1100
-	{LD, X, PostInc}: 0x900D, // 1001 0000 0000 1101
-	{LD, X, PreDec}:  0x900E, // 1001 0000 0000 1110
-	{LD, Y, None}:    0x800D, // 1000 0000 0000 1000
-	{LD, Y, PostInc}: 0x9009, // 1001 0000 0000 1001
-	{LD, Y, PreDec}:  0x900A, // 1001 0000 0000 1010
-	{LD, Z, None}:    0x8000, // 1000 0000 0000 0000
-	{LD, Z, PostInc}: 0x9001, // 1001 0000 0000 0001
-	{LD, Z, PreDec}:  0x9002, // 1001 0000 0000 0010
-	{LDD, Y, Disp}:   0x8008, // 10q0 qq0d dddd 1qqq
-	{LDD, Z, Disp}:   0x8000, // 10q0 qq0d dddd 0qqq
 }
 
 /* -------- Miscellaneous -------- */
@@ -416,23 +396,35 @@ func k_6_ii(base uint64, op Value) (uint64, error) {
 /* -------- Pointer Register Operands -------- */
 
 /*
-Name         Pointer_ld
-Description  encodes X, Y, or Z in unchanged, postinc or predec form
+	-- LD --
+	100b 0000 000 ppff
+
+	d - Rd
+	p - Z (1) / Y (2) / X (3)
+	f - None (0) / PostInc (1) / PreDec (2)
+	b = (Y | Z) & None
+*/
+
+/*
+Name         ld__pointer
+Description  encodes X, Y, or Z in unchanged, postinc or predec form for LD
 Encoding
 
-	(i)    1001 0000 0000 1100
-	(ii)   1001 0000 0000 1101
-	(iii)  1001 0000 0000 1110
+	()   100b 0000 0000 ppff
 
-	(iv)   1000 0000 0000 1000
-	(v)    1001 0000 0000 1001
-	(vi)   1001 0000 0000 1010
+	(X)  1001 0000 0000 1100
+	(X+) 1001 0000 0000 1101
+	(-X) 1001 0000 0000 1110
 
-	(vi)   1000 0000 0000 0000
-	(viii) 1001 0000 0000 0001
-	(ix)   1001 0000 0000 0010
+	(Y)  1000 0000 0000 1000
+	(Y+) 1001 0000 0000 1001
+	(-Y) 1001 0000 0000 1010
+
+	(Z)  1000 0000 0000 0000
+	(Z+) 1001 0000 0000 0001
+	(-Z) 1001 0000 0000 0010
 */
-func Pointer_ld(base uint64, rp Value) (uint64, error) {
+func ld_pointer(base uint64, rp Value) (uint64, error) {
 	switch rp := rp.(type) {
 	case *RegPointer:
 		reg := base >> 4
@@ -454,13 +446,33 @@ func Pointer_ld(base uint64, rp Value) (uint64, error) {
 			}
 		}
 
-		instr, exists := PointerInstructions[PointerKey{LD, rp.Value, rp.Op}]
-
-		if !exists {
-			return 0, fmt.Errorf("(%v, %v, %v) is an undefined operation", LD, rp.Value, rp.Op)
+		/*
+			p = X (3)
+			  | Y (2)
+			  | Z (0)
+		*/
+		if rp.Value == X {
+			base = base | 0x000C
 		}
 
-		return instr, nil
+		if rp.Value == Y {
+			base = base | 0x0008
+		}
+
+		/*
+			b = not((Y or Z) and None)
+			  = X or (not None)
+		*/
+		if (rp.Value == X) && (rp.Op != None) {
+			base = base | 0x1000
+		}
+
+		/*
+			f = None    (0)
+			  | PostInc (1)
+			  | PreDec  (2)
+		*/
+		return base | uint64(rp.Op), nil
 
 	case *Error:
 		return 0, errors.New(rp.Value)
@@ -471,27 +483,118 @@ func Pointer_ld(base uint64, rp Value) (uint64, error) {
 }
 
 /*
-Name         Disp_ld
-Description  encodes Y or Z in displacement form
+Name         ldd__pointer
+Description  encodes Y or Z in displacement form for LDD
 Encoding
 
-	(i)    10q0 qq0d dddd 1qqq
-	(ii)   10q0 qq0d dddd 0qqq
+	(Y)   10q0 qq00 0000 1qqq
+	(Z)   10q0 qq0d dddd 0qqq
 */
-func Disp_ld(base uint64, rp Value) (uint64, error) {
+func ldd_pointer(base uint64, rp Value) (uint64, error) {
 	switch rp := rp.(type) {
 	case *RegPointer:
 		if rp.Disp > 63 {
 			return 0, errors.New("displacement larger than 6 bits")
 		}
 
-		instr, exists := PointerInstructions[PointerKey{LDD, rp.Value, rp.Op}]
-
-		if !exists {
-			return 0, fmt.Errorf("(%v, %v, %v) is an undefined operation", LD, rp.Value, rp.Op)
+		if rp.Value == Y {
+			base = base & 0x0008
 		}
 
-		return instr | ((rp.Disp << 8) & 0x2000) | ((rp.Disp << 7) & 0x0C00) | (rp.Disp & 0x0007), nil
+		return base |
+			((rp.Disp << 8) & 0x2000) |
+			((rp.Disp << 7) & 0x0C00) |
+			(rp.Disp & 0x0007), nil
+
+	case *Error:
+		return 0, errors.New(rp.Value)
+
+	default:
+		return 0, fmt.Errorf("expected reg pointer, got %+v", rp.Fmt())
+	}
+}
+
+/*
+Name         st__pointer
+Description  encodes X, Y, or Z in unchanged, postinc or predec form for ST
+Encoding
+
+	(-)  100b 0010 0000 ppff
+
+	(X)  1001 001r rrrr 1100
+	(X+) 1001 001r rrrr 1101
+	(-X) 1001 001r rrrr 1110
+
+	(Y)  1000 001r rrrr 1000
+	(Y+) 1000 001r rrrr 1000
+	(-Y) 1001 001r rrrr 1010
+
+	(Z)  1000 001r rrrr 0000
+	(Z+) 1001 001r rrrr 0001
+	(-Z) 1001 001r rrrr 0010
+*/
+func st_pointer(base uint64, rp Value) (uint64, error) {
+	switch rp := rp.(type) {
+	case *RegPointer:
+		/*
+			p = X (3)
+			  | Y (2)
+			  | Z (0)
+		*/
+		if rp.Value == X {
+			base = base | 0x000C
+		}
+
+		if rp.Value == Y {
+			base = base | 0x0008
+		}
+
+		/*
+			b = not((Y or Z) and None)
+			  = X or (not None)
+		*/
+		if (rp.Value == X) && (rp.Op != None) {
+			base = base | 0x1000
+		}
+
+		/*
+			f = None    (0)
+			  | PostInc (1)
+			  | PreDec  (2)
+		*/
+		return base | uint64(rp.Op), nil
+
+	case *Error:
+		return 0, errors.New(rp.Value)
+
+	default:
+		return 0, fmt.Errorf("expected reg pointer, got %+v", rp.Fmt())
+	}
+}
+
+/*
+Name         std__pointer
+Description  encodes Y or Z in displacement form for STD
+Encoding
+
+	(Y) 10q0 qq10 0000 1qqq
+	(Z) 10q0 qq10 0000 0qqq
+*/
+func std_pointer(base uint64, rp Value) (uint64, error) {
+	switch rp := rp.(type) {
+	case *RegPointer:
+		if rp.Disp > 63 {
+			return 0, errors.New("displacement larger than 6 bits")
+		}
+
+		if rp.Value == Y {
+			base = base & 0x0008
+		}
+
+		return base |
+			((rp.Disp << 8) & 0x2000) |
+			((rp.Disp << 7) & 0x0C00) |
+			(rp.Disp & 0x0007), nil
 
 	case *Error:
 		return 0, errors.New(rp.Value)

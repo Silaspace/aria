@@ -5,7 +5,7 @@ import (
 )
 
 type ValType int
-type PointerOp int
+type PointerOp uint64
 
 type Value interface {
 	Type() ValType
