@@ -115,3 +115,8 @@ func IsAdd(key string) bool {
 	mn := Mnemonic(key)
 	return mn == OP_ADD
 }
+
+func IsSub(key string) bool {
+	mn := Mnemonic(key)
+	return mn == OP_SUB
+}

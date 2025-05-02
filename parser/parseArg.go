@@ -42,9 +42,46 @@ func ParseArg(p *Parser) Arg {
 		}
 
 	default:
+		return ParseExprArg(p)
+	}
+}
+
+func ParseExprArg(p *Parser) Arg {
+	token := p.GetCurrentToken()
+
+	if language.IsSub(token.Value) {
+		nextToken := p.GetNextToken()
+
+		switch nextToken.Type {
+		case lexer.TK_REG:
+			r := ParsePreDecRegPointer(p)
+			return &ArgReg{
+				Value: r,
+			}
+
+		// Carry on parsing expr in the form -(e)
+		default:
+			op, _ := language.GetOp(token.Value)
+			tbp := GetPrecedence(token, true)
+			p.GetNextToken()
+			expr := ParseExpr(p, tbp)
+
+			e := &MonopExpr{
+				E1:     expr,
+				Symbol: token.Value,
+				Op:     op,
+			}
+
+			return &ArgExpr{
+				Value: e,
+			}
+		}
+
+	} else {
 		e := ParseExpr(p, 0)
 		return &ArgExpr{
 			Value: e,
 		}
 	}
+
 }

@@ -113,7 +113,7 @@ func ParseLeft(p *Parser) Expr {
 	case lexer.TK_REG:
 		p.GetNextToken()
 
-		if token.Value == string(language.PC) {
+		if language.IsPC(token.Value) {
 			return &Ident{
 				Value: token.Value,
 			}
