@@ -13,6 +13,8 @@ func ParseLine(p *Parser) Line {
 
 		switch token.Type {
 		case lexer.TK_LINE:
+			// Increment line number
+			p.Line++
 			continue
 
 		case lexer.TK_COMMENT:
@@ -173,20 +175,44 @@ func Instr(p *Parser) Line {
 		p.GetNextToken() // Consume ','
 		arg2 := ParseArg(p)
 
-		switch arg2 := arg2.(type) {
-		case *ArgError:
+		if err, ok := arg2.(*ArgError); ok {
 			return &Error{
-				Value: arg2.Value,
+				Value: err.Value,
 				Line:  p.Line,
 			}
+		}
 
-		default:
+		thirdToken := p.GetCurrentToken()
+
+		switch thirdToken.Type {
+		case lexer.TK_COMMENT, lexer.TK_EOF:
+			return &Instruction{
+				Mnemonic: token.Value,
+				Op1:      arg1,
+				Op2:      arg2,
+				Line:     p.Line,
+			}
+
+		case lexer.TK_LINE:
+			// Increment line number
+			p.Line++
+
 			return &Instruction{
 				Mnemonic: token.Value,
 				Op1:      arg1,
 				Op2:      arg2,
 				Line:     p.Line - 1,
 			}
+
+		default:
+			return &Error{
+				Value: fmt.Sprintf(
+					"Unexpected token %v after INST",
+					nextToken.Print(),
+				),
+				Line: p.Line,
+			}
+
 		}
 
 	case lexer.TK_COMMENT, lexer.TK_EOF:
@@ -194,10 +220,13 @@ func Instr(p *Parser) Line {
 			Mnemonic: token.Value,
 			Op1:      arg1,
 			Op2:      &Nil{},
-			Line:     p.Line - 1,
+			Line:     p.Line,
 		}
 
 	case lexer.TK_LINE:
+		// Increment line number
+		p.Line++
+
 		return &Instruction{
 			Mnemonic: token.Value,
 			Op1:      arg1,

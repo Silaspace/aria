@@ -16,11 +16,6 @@ func (p *Parser) GetCurrentToken() lexer.Token {
 
 func (p *Parser) GetNextToken() lexer.Token {
 	p.curtok = p.Lexer.Next()
-
-	if p.curtok.Type == lexer.TK_LINE {
-		p.Line++
-	}
-
 	return p.curtok
 }
 
