@@ -497,8 +497,12 @@ func ldd_pointer(base uint64, rp Value) (uint64, error) {
 			return 0, errors.New("displacement larger than 6 bits")
 		}
 
+		if rp.Value == X {
+			return 0, errors.New("displacement from X not supported")
+		}
+
 		if rp.Value == Y {
-			base = base & 0x0008
+			base = base | 0x0008
 		}
 
 		return base |
@@ -579,6 +583,8 @@ Encoding
 
 	(Y) 10q0 qq10 0000 1qqq
 	(Z) 10q0 qq10 0000 0qqq
+
+	12 82 -> 1000 0010 0001 0010
 */
 func std_pointer(base uint64, rp Value) (uint64, error) {
 	switch rp := rp.(type) {
@@ -587,8 +593,12 @@ func std_pointer(base uint64, rp Value) (uint64, error) {
 			return 0, errors.New("displacement larger than 6 bits")
 		}
 
+		if rp.Value == X {
+			return 0, errors.New("displacement from X not supported")
+		}
+
 		if rp.Value == Y {
-			base = base & 0x0008
+			base = base | 0x0008
 		}
 
 		return base |
