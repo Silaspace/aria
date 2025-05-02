@@ -481,13 +481,17 @@ Encoding
 func Disp_ld(base uint64, rp Value) (uint64, error) {
 	switch rp := rp.(type) {
 	case *RegPointer:
+		if rp.Disp > 63 {
+			return 0, errors.New("displacement larger than 6 bits")
+		}
+
 		instr, exists := PointerInstructions[PointerKey{LDD, rp.Value, rp.Op}]
 
 		if !exists {
 			return 0, fmt.Errorf("(%v, %v, %v) is an undefined operation", LD, rp.Value, rp.Op)
 		}
 
-		return instr, nil
+		return instr | ((rp.Disp << 8) & 0x2000) | ((rp.Disp << 7) & 0x0C00) | (rp.Disp & 0x0007), nil
 
 	case *Error:
 		return 0, errors.New(rp.Value)
