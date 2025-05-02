@@ -9,6 +9,12 @@ import (
 
 type Register struct{}
 
+type PointerKey struct {
+	instr Mnemonic
+	reg   Mnemonic
+	op    PointerOp
+}
+
 const (
 	PC Mnemonic = "pc"
 	X  Mnemonic = "x"
@@ -21,6 +27,20 @@ var Registers = map[Mnemonic]Register{
 	X:  {},
 	Y:  {},
 	Z:  {},
+}
+
+var PointerInstructions = map[PointerKey]uint64{
+	{LD, X, None}:    0x900C, // 1001 0000 0000 1100
+	{LD, X, PostInc}: 0x900D, // 1001 0000 0000 1101
+	{LD, X, PreDec}:  0x900E, // 1001 0000 0000 1110
+	{LD, Y, None}:    0x800D, // 1000 0000 0000 1000
+	{LD, Y, PostInc}: 0x9009, // 1001 0000 0000 1001
+	{LD, Y, PreDec}:  0x900A, // 1001 0000 0000 1010
+	{LD, Z, None}:    0x8000, // 1000 0000 0000 0000
+	{LD, Z, PostInc}: 0x9001, // 1001 0000 0000 0001
+	{LD, Z, PreDec}:  0x9002, // 1001 0000 0000 0010
+	{LDD, Y, Disp}:   0x8008, // 10q0 qq0d dddd 1qqq
+	{LDD, Z, Disp}:   0x8000, // 10q0 qq0d dddd 0qqq
 }
 
 /* -------- Miscellaneous -------- */
@@ -390,5 +410,89 @@ func k_6_ii(base uint64, op Value) (uint64, error) {
 
 	default:
 		return 0, fmt.Errorf("expected int, got %+v", op.Fmt())
+	}
+}
+
+/* -------- Pointer Register Operands -------- */
+
+/*
+Name         Pointer_ld
+Description  encodes X, Y, or Z in unchanged, postinc or predec form
+Encoding
+
+	(i)    1001 0000 0000 1100
+	(ii)   1001 0000 0000 1101
+	(iii)  1001 0000 0000 1110
+
+	(iv)   1000 0000 0000 1000
+	(v)    1001 0000 0000 1001
+	(vi)   1001 0000 0000 1010
+
+	(vi)   1000 0000 0000 0000
+	(viii) 1001 0000 0000 0001
+	(ix)   1001 0000 0000 0010
+*/
+func Pointer_ld(base uint64, rp Value) (uint64, error) {
+	switch rp := rp.(type) {
+	case *RegPointer:
+		reg := base >> 4
+
+		if rp.Op == PostInc || rp.Op == PreDec {
+			switch rp.Value {
+			case X:
+				if reg == 26 || reg == 27 {
+					return 0, errors.New("ld r26 x+ and ld r27 x+ are undefined")
+				}
+			case Y:
+				if reg == 28 || reg == 29 {
+					return 0, errors.New("ld r28 y+ and ld r29 y+ are undefined")
+				}
+			case Z:
+				if reg == 30 || reg == 31 {
+					return 0, errors.New("ld r30 z+ and ld r31 z+ are undefined")
+				}
+			}
+		}
+
+		instr, exists := PointerInstructions[PointerKey{LD, rp.Value, rp.Op}]
+
+		if !exists {
+			return 0, fmt.Errorf("(%v, %v, %v) is an undefined operation", LD, rp.Value, rp.Op)
+		}
+
+		return instr, nil
+
+	case *Error:
+		return 0, errors.New(rp.Value)
+
+	default:
+		return 0, fmt.Errorf("expected reg pointer, got %+v", rp.Fmt())
+	}
+}
+
+/*
+Name         Disp_ld
+Description  encodes Y or Z in displacement form
+Encoding
+
+	(i)    10q0 qq0d dddd 1qqq
+	(ii)   10q0 qq0d dddd 0qqq
+*/
+func Disp_ld(base uint64, rp Value) (uint64, error) {
+	switch rp := rp.(type) {
+	case *RegPointer:
+		instr, exists := PointerInstructions[PointerKey{LDD, rp.Value, rp.Op}]
+
+		if !exists {
+			return 0, fmt.Errorf("(%v, %v, %v) is an undefined operation", LD, rp.Value, rp.Op)
+		}
+
+		return instr, nil
+
+	case *Error:
+		return 0, errors.New(rp.Value)
+
+	default:
+		return 0, fmt.Errorf("expected reg pointer, got %+v", rp.Fmt())
 	}
 }

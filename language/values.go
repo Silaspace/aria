@@ -1,8 +1,11 @@
 package language
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type ValType int
+type PointerOp int
 
 type Value interface {
 	Type() ValType
@@ -10,14 +13,22 @@ type Value interface {
 }
 
 const (
-	NilType     ValType = 0
-	ErrType     ValType = 1
-	IdentType   ValType = 2
-	RegType     ValType = 3
-	RegPairType ValType = 4
-	IntType     ValType = 5
-	ListType    ValType = 6
-	AssignType  ValType = 7
+	NilType        ValType = 0
+	ErrType        ValType = 1
+	IdentType      ValType = 2
+	RegType        ValType = 3
+	RegPairType    ValType = 4
+	RegPointerType ValType = 5
+	IntType        ValType = 6
+	ListType       ValType = 7
+	AssignType     ValType = 8
+)
+
+const (
+	None    PointerOp = 0
+	PostInc PointerOp = 1
+	PreDec  PointerOp = 2
+	Disp    PointerOp = 3
 )
 
 type Nil struct{}
@@ -36,6 +47,12 @@ type Reg struct {
 
 type RegPair struct {
 	Value uint64
+}
+
+type RegPointer struct {
+	Value Mnemonic
+	Op    PointerOp
+	Disp  uint64
 }
 
 type Int struct {
@@ -71,6 +88,10 @@ func (r *RegPair) Type() ValType {
 	return RegPairType
 }
 
+func (r *RegPointer) Type() ValType {
+	return RegPointerType
+}
+
 func (i *Int) Type() ValType {
 	return IntType
 }
@@ -101,6 +122,21 @@ func (r *Reg) Fmt() string {
 
 func (r *RegPair) Fmt() string {
 	return fmt.Sprintf("reg (%v : %v)", r.Value+1, r.Value)
+}
+
+func (r *RegPointer) Fmt() string {
+	switch r.Op {
+	case None:
+		return fmt.Sprintf("reg (%v)", r.Value)
+	case PostInc:
+		return fmt.Sprintf("reg (%v+)", r.Value)
+	case PreDec:
+		return fmt.Sprintf("reg (-%v)", r.Value)
+	case Disp:
+		return fmt.Sprintf("reg (%v+%v)", r.Value, r.Disp)
+	default:
+		return fmt.Sprintf("REG_ERR (%v, %v, %v)", r.Value, r.Op, r.Disp)
+	}
 }
 
 func (i *Int) Fmt() string {

@@ -23,7 +23,6 @@ const (
 
 /*
 TODO
-- ADIW
 - LD
 - LPM
 - SBIW
@@ -36,7 +35,7 @@ const (
 	ADD   Mnemonic = "add"
 	AND   Mnemonic = "and"
 	ANDI  Mnemonic = "andi"
-	ADIW  Mnemonic = "adiw" /* AVR - TODO */
+	ADIW  Mnemonic = "adiw"
 	ASR   Mnemonic = "asr"
 	BCLR  Mnemonic = "bclr"
 	BLD   Mnemonic = "bld"
@@ -85,7 +84,8 @@ const (
 	IN    Mnemonic = "in"
 	INC   Mnemonic = "inc"
 	JMP   Mnemonic = "jmp" /* AVRe */
-	LD    Mnemonic = "ld"  /* AVR - TODO */
+	LD    Mnemonic = "ld"
+	LDD   Mnemonic = "ldd"
 	LDI   Mnemonic = "ldi"
 	LDS   Mnemonic = "lds"
 	LPM   Mnemonic = "lpm" /* AVR - TODO */ /* AVRe - (LPM Rd, Z)  (LPM Rd, Z+) */
@@ -706,16 +706,51 @@ var AVR = map[Mnemonic]Instruction{
 		Flags: 0,
 	},
 
-	/*  TODO - ELEVEN INSTRUCTION VARIENTS
-		Syntax
-		Encoding
+	/*
+		Syntax		(i)    LD Rd X
+					(ii)   LD Rd X+
+					(iii)  LD Rd -X
 
+					(iv)   LD Rd Y
+					(v)    LD Rd Y+
+					(vi)   LD Rd -Y
+
+					(vii)  LD Rd Z
+					(viii) LD Rd Z+
+					(ix)   LD Rd -Z
+
+		Encoding	(i)    1001 000d dddd 1100
+					(ii)   1001 000d dddd 1101
+					(iii)  1001 000d dddd 1110
+
+					(iv)   1000 000d dddd 1000
+					(v)    1001 000d dddd 1001
+					(vi)   1001 000d dddd 1010
+
+					(vi)   1000 000d dddd 1000
+					(viii) 1001 000d dddd 1001
+					(ix)   1001 000d dddd 1010
+	*/
 	LD: {
 		Base:  0x0000,
-		Op1:   nil,
-		Op2:   nil,
+		Op1:   Rd,
+		Op2:   Pointer_ld,
 		Flags: 0,
-	},*/
+	},
+
+	/*
+		Syntax		(i)    LD Rd Y+q
+					(ii)   LD Rd Z+q
+
+		Encoding	(i)    10q0 qq0d dddd 1qqq
+					(ii)   10q0 qq0d dddd 0qqq
+	*/
+	LDD: {
+		Base:  0x0000,
+		Op1:   Rd,
+		Op2:   Disp_ld,
+		Flags: 0,
+	},
 
 	/*
 		Syntax    LDI Rd, K

@@ -11,14 +11,8 @@ func ParseReg(p *Parser) Reg {
 	token := p.GetCurrentToken()
 
 	switch language.Mnemonic(token.Value) {
-	case language.X:
-		return ParsePostIncRegPointer(p, X)
-
-	case language.Y:
-		return ParsePostIncRegPointer(p, Y)
-
-	case language.Z:
-		return ParsePostIncRegPointer(p, Z)
+	case language.X, language.Y, language.Z:
+		return ParsePostIncRegPointer(p, token.Value)
 	}
 
 	nextToken := p.GetNextToken()
@@ -56,7 +50,7 @@ func ParseRegPair(p *Parser) Reg {
 	}
 }
 
-func ParsePostIncRegPointer(p *Parser, reg RegName) Reg {
+func ParsePostIncRegPointer(p *Parser, reg string) Reg {
 	token := p.GetNextToken()
 
 	switch token.Type {
@@ -70,14 +64,14 @@ func ParsePostIncRegPointer(p *Parser, reg RegName) Reg {
 
 				return &PointerReg{
 					Value: reg,
-					Op:    Disp,
+					Op:    language.Disp,
 					Disp:  nextToken.Value,
 				}
 
 			default:
 				return &PointerReg{
 					Value: reg,
-					Op:    PostInc,
+					Op:    language.PostInc,
 					Disp:  "",
 				}
 			}
@@ -93,7 +87,7 @@ func ParsePostIncRegPointer(p *Parser, reg RegName) Reg {
 	default:
 		return &PointerReg{
 			Value: reg,
-			Op:    None,
+			Op:    language.None,
 			Disp:  "",
 		}
 	}
@@ -105,24 +99,10 @@ func ParsePreDecRegPointer(p *Parser) Reg {
 	p.GetNextToken() //Consume
 
 	switch language.Mnemonic(token.Value) {
-	case language.X:
+	case language.X, language.Y, language.Z:
 		return &PointerReg{
-			Value: X,
-			Op:    PreDec,
-			Disp:  "",
-		}
-
-	case language.Y:
-		return &PointerReg{
-			Value: Y,
-			Op:    PreDec,
-			Disp:  "",
-		}
-
-	case language.Z:
-		return &PointerReg{
-			Value: Z,
-			Op:    PreDec,
+			Value: token.Value,
+			Op:    language.PreDec,
 			Disp:  "",
 		}
 

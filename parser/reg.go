@@ -1,7 +1,8 @@
 package parser
 
+import "github.com/silaspace/aria/language"
+
 type RegType int
-type RegName int
 type RegOp int
 
 type Reg interface {
@@ -14,12 +15,6 @@ const (
 	Pair    RegType = 1
 	Pointer RegType = 2
 	ErrReg  RegType = 3
-)
-
-const (
-	X RegName = 0
-	Y RegName = 1
-	Z RegName = 2
 )
 
 const (
@@ -38,8 +33,8 @@ type RegPair struct {
 }
 
 type PointerReg struct {
-	Value RegName
-	Op    RegOp
+	Value string
+	Op    language.PointerOp
 	Disp  string
 }
 

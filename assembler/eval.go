@@ -73,7 +73,9 @@ func EvalDirVal(dirval parser.DirVal, symbolTable map[string]uint64) language.Va
 		}
 
 	case *parser.ExprListDirVal:
-		panic("UNIMPLEMENTED")
+		return &language.Error{
+			Value: "List of expressions in a directive is not implemeneted",
+		}
 
 	case *parser.AssignDirVal:
 		val, err := EvalExpr(dirval.Value, symbolTable, false, 0)
@@ -195,7 +197,27 @@ func EvalReg(reg parser.Reg) language.Value {
 		}
 
 	case *parser.PointerReg:
-		panic("UNIMPLEMENTED")
+		dispVal, err := strconv.ParseUint(reg.Disp, 10, 32)
+
+		if err != nil {
+			return &language.Error{
+				Value: err.Error(),
+			}
+		}
+
+		switch language.Mnemonic(reg.Value) {
+		case language.X, language.Y, language.Z:
+			return &language.RegPointer{
+				Value: language.Mnemonic(reg.Value),
+				Op:    reg.Op,
+				Disp:  dispVal,
+			}
+
+		default:
+			return &language.Error{
+				Value: fmt.Sprintf("Unknown reg pointer '%v'", reg.Value),
+			}
+		}
 
 	case *parser.RegErr:
 		return &language.Error{
