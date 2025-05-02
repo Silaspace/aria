@@ -60,7 +60,7 @@ func ParsePostIncRegPointer(p *Parser, reg string) Reg {
 
 			switch nextToken.Type {
 			case lexer.TK_IMM:
-				p.GetNextToken() // Conusme
+				p.GetNextToken() // Consume
 
 				return &PointerReg{
 					Value: reg,
@@ -72,7 +72,7 @@ func ParsePostIncRegPointer(p *Parser, reg string) Reg {
 				return &PointerReg{
 					Value: reg,
 					Op:    language.PostInc,
-					Disp:  "",
+					Disp:  "0",
 				}
 			}
 		} else {
@@ -88,7 +88,7 @@ func ParsePostIncRegPointer(p *Parser, reg string) Reg {
 		return &PointerReg{
 			Value: reg,
 			Op:    language.None,
-			Disp:  "",
+			Disp:  "0",
 		}
 	}
 }
@@ -103,7 +103,7 @@ func ParsePreDecRegPointer(p *Parser) Reg {
 		return &PointerReg{
 			Value: token.Value,
 			Op:    language.PreDec,
-			Disp:  "",
+			Disp:  "0",
 		}
 
 	default:
