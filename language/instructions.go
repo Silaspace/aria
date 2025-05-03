@@ -26,7 +26,7 @@ const (
 	ADD   Mnemonic = "add"
 	AND   Mnemonic = "and"
 	ANDI  Mnemonic = "andi"
-	ADIW  Mnemonic = "adiw"
+	ADIW  Mnemonic = "adiw" /* AVR */
 	ASR   Mnemonic = "asr"
 	BCLR  Mnemonic = "bclr"
 	BLD   Mnemonic = "bld"
@@ -76,10 +76,10 @@ const (
 	INC   Mnemonic = "inc"
 	JMP   Mnemonic = "jmp" /* AVRe */
 	LD    Mnemonic = "ld"
-	LDD   Mnemonic = "ldd"
+	LDD   Mnemonic = "ldd" /* AVR */
 	LDI   Mnemonic = "ldi"
 	LDS   Mnemonic = "lds"
-	LPM   Mnemonic = "lpm"
+	LPM   Mnemonic = "lpm" /* AVR */
 	LSL   Mnemonic = "lsl"
 	LSR   Mnemonic = "lsr"
 	MOV   Mnemonic = "mov"
@@ -101,7 +101,7 @@ const (
 	SBI   Mnemonic = "sbi"
 	SBIC  Mnemonic = "sbic"
 	SBIS  Mnemonic = "sbis"
-	SBIW  Mnemonic = "sbiw"
+	SBIW  Mnemonic = "sbiw" /* AVR */
 	SBR   Mnemonic = "sbr"
 	SBRC  Mnemonic = "sbrc"
 	SBRS  Mnemonic = "sbrs"
@@ -116,7 +116,7 @@ const (
 	SEZ   Mnemonic = "sez"
 	SLEEP Mnemonic = "sleep"
 	ST    Mnemonic = "st"
-	STD   Mnemonic = "std"
+	STD   Mnemonic = "std" /* AVR */
 	STS   Mnemonic = "sts"
 	SUB   Mnemonic = "sub"
 	SUBI  Mnemonic = "subi"
@@ -125,7 +125,18 @@ const (
 	WDR   Mnemonic = "wdr"
 )
 
-var AVR = map[Mnemonic]Instruction{
+/*
+AVR_core
+
+This is not a full implementation of the instruction set,
+but instead a set of all the instructions supported by all
+of the AVR cores.
+
+The assembler defaults to this list if it does not know what
+device it is assembling for.
+*/
+
+var AVR_core = map[Mnemonic]Instruction{
 	/*
 		Syntax    ADC Rd, Rr
 		Encoding  0001 11rd dddd rrrr
@@ -167,17 +178,6 @@ var AVR = map[Mnemonic]Instruction{
 		Base:  0x7000,
 		Op1:   Rd_high,
 		Op2:   k_8,
-		Flags: 0,
-	},
-
-	/*
-		Syntax    ADIW Rd+1:Rd, K
-		Encoding  1001 0110 KKdd KKKK
-	*/
-	ADIW: {
-		Base:  0x9600,
-		Op1:   R_pair,
-		Op2:   k_6_ii,
 		Flags: 0,
 	},
 
@@ -731,20 +731,6 @@ var AVR = map[Mnemonic]Instruction{
 	},
 
 	/*
-		Syntax		(i)    LD Rd Y+q
-					(ii)   LD Rd Z+q
-
-		Encoding	(i)    10q0 qq0d dddd 1qqq
-					(ii)   10q0 qq0d dddd 0qqq
-	*/
-	LDD: {
-		Base:  0x8000,
-		Op1:   Rd,
-		Op2:   ldd_pointer,
-		Flags: 0,
-	},
-
-	/*
 		Syntax    LDI Rd, K
 		Encoding  1110 KKKK dddd KKKK
 	*/
@@ -764,17 +750,6 @@ var AVR = map[Mnemonic]Instruction{
 		Op1:   R_long,
 		Op2:   k_16,
 		Flags: LONG,
-	},
-
-	/*
-		Syntax    LPM
-		Encoding  1001 0101 1100 1000
-	*/
-	LPM: {
-		Base:  0x95C8,
-		Op1:   nil,
-		Op2:   nil,
-		Flags: 0,
 	},
 
 	/*
@@ -1009,17 +984,6 @@ var AVR = map[Mnemonic]Instruction{
 	},
 
 	/*
-		Syntax    SBIW Rd+1:Rd, K
-		Encoding  1001 0111 KKdd KKKK
-	*/
-	SBIW: {
-		Base:  0x9B00,
-		Op1:   R_pair,
-		Op2:   k_6_ii,
-		Flags: 0,
-	},
-
-	/*
 		Syntax    SBR Rd, K
 		Encoding  0110 KKKK dddd KKKK
 	*/
@@ -1195,20 +1159,6 @@ var AVR = map[Mnemonic]Instruction{
 	},
 
 	/*
-		Syntax		(i)    STD Y+q,  Rd
-					(ii)   STD Z+q, Rd
-
-		Encoding	(i)    10q0 qq1r rrrr 1qqq
-					(ii)   10q0 qq1r rrrr 0qqq
-	*/
-	STD: {
-		Base:  0x8200,
-		Op1:   std_pointer,
-		Op2:   Rd,
-		Flags: 0,
-	},
-
-	/*
 		Syntax    STS k, Rd
 		Encoding  1001 001d dddd 0000 kkkk kkkk kkkk kkkk
 	*/
@@ -1274,6 +1224,87 @@ var AVR = map[Mnemonic]Instruction{
 		Flags: 0,
 	},
 }
+
+/*
+AVR instruction set
+
+This is the original instruction set from 1995,
+composed of the AVR_core set plus some additional
+instructions that the reduced core varients do not
+support.
+*/
+
+var AVR = map[Mnemonic]Instruction{
+	/*
+		Syntax    ADIW Rd+1:Rd, K
+		Encoding  1001 0110 KKdd KKKK
+	*/
+	ADIW: {
+		Base:  0x9600,
+		Op1:   R_pair,
+		Op2:   k_6_ii,
+		Flags: 0,
+	},
+
+	/*
+		Syntax		(i)    LD Rd Y+q
+					(ii)   LD Rd Z+q
+
+		Encoding	(i)    10q0 qq0d dddd 1qqq
+					(ii)   10q0 qq0d dddd 0qqq
+	*/
+	LDD: {
+		Base:  0x8000,
+		Op1:   Rd,
+		Op2:   ldd_pointer,
+		Flags: 0,
+	},
+
+	/*
+		Syntax    LPM
+		Encoding  1001 0101 1100 1000
+	*/
+	LPM: {
+		Base:  0x95C8,
+		Op1:   nil,
+		Op2:   nil,
+		Flags: 0,
+	},
+
+	/*
+		Syntax    SBIW Rd+1:Rd, K
+		Encoding  1001 0111 KKdd KKKK
+	*/
+	SBIW: {
+		Base:  0x9B00,
+		Op1:   R_pair,
+		Op2:   k_6_ii,
+		Flags: 0,
+	},
+
+	/*
+		Syntax		(i)    STD Y+q,  Rd
+					(ii)   STD Z+q, Rd
+
+		Encoding	(i)    10q0 qq1r rrrr 1qqq
+					(ii)   10q0 qq1r rrrr 0qqq
+	*/
+	STD: {
+		Base:  0x8200,
+		Op1:   std_pointer,
+		Op2:   Rd,
+		Flags: 0,
+	},
+}
+
+/*
+AVR extented (AVRe) instruction set
+
+Includes all instructions from AVR_core, plus all
+the instructions from the original AVR instruction set.
+
+Additionally, it defines the instructions below.
+*/
 
 var AVRe = map[Mnemonic]Instruction{
 	/*
