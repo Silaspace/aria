@@ -51,26 +51,49 @@ func GetInstr(key string, dev *device.Device) (Instruction, error) {
 	var instr Instruction
 	var exist bool
 
+	/*
+		Core specific instructions have priority over core
+		instructions. This allows cores such as AVRrc to have
+		the same mnemonic but encode differently to save space.
+	*/
+
 	switch dev.DeviceCore {
+	case device.Nil:
+		if instr, exist = AVR_core[mn]; exist {
+			return instr, nil
+		}
+
+		return instr, fmt.Errorf("device core not specified; '%v' does not exist", key)
+
 	case device.AVR:
-		break
+		if instr, exist = AVR[mn]; exist {
+			return instr, nil
+		}
+
+		if instr, exist = AVR_core[mn]; exist {
+			return instr, nil
+		}
+
+		return instr, fmt.Errorf("'%v' does not exist in the AVR instruction set", key)
+
 	case device.AVRe:
-		instr, exist = AVRe[mn]
+		if instr, exist = AVRe[mn]; exist {
+			return instr, nil
+		}
+
+		if instr, exist = AVR[mn]; exist {
+			return instr, nil
+		}
+
+		if instr, exist = AVR_core[mn]; exist {
+			return instr, nil
+		}
+
+		return instr, fmt.Errorf("'%v' does not exist in the AVRe instruction set", key)
+
 	default:
 		return instr, fmt.Errorf("device core '%v' not implemented", dev.DeviceCore)
 	}
-
-	if exist {
-		return instr, nil
-	}
-
-	instr, exist = AVR[mn]
-
-	if exist {
-		return instr, nil
-	}
-
-	return instr, fmt.Errorf("instruction '%v' does not exist", key)
 }
 
 func GetOp(key string) (Operator, error) {
