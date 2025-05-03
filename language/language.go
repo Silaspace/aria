@@ -22,6 +22,10 @@ func Exists(key string) KeywordType {
 
 	mn := Mnemonic(key)
 
+	if _, exists := AVR_core[mn]; exists {
+		return INSTR
+	}
+
 	if _, exists := AVR[mn]; exists {
 		return INSTR
 	}
