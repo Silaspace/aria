@@ -155,16 +155,22 @@ func (a *Assembler) Run() error {
 			relative := instr.IsRelative()
 
 			op1 := EvalArg(line.Op1, a.Symbols, relative, a.PC)
-			err = instr.Apply1(op1)
+			op2 := EvalArg(line.Op2, a.Symbols, relative, a.PC)
 
-			if err != nil {
+			// Check arguments against one another for undefined behaviour
+			if err := op1.Augment(op2); err != nil {
 				return a.wrap(err)
 			}
 
-			op2 := EvalArg(line.Op2, a.Symbols, relative, a.PC)
-			err = instr.Apply2(op2)
+			if err := op2.Augment(op1); err != nil {
+				return a.wrap(err)
+			}
 
-			if err != nil {
+			if err := instr.Apply1(op1); err != nil {
+				return a.wrap(err)
+			}
+
+			if err := instr.Apply2(op2); err != nil {
 				return a.wrap(err)
 			}
 

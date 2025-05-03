@@ -432,31 +432,30 @@ func R_pointer(base uint64, rp Value) (uint64, error) {
 		}
 
 	case *RegPointerPostInc:
-		reg := 0
 		switch Mnemonic(rp.Value) {
 		case X:
-			if reg == 26 {
-				return 0, errors.New("ld r26, x+ is undefined")
-			} else if reg == 27 {
-				return 0, errors.New("ld r27, x+ is undefined")
+			if rp.Reg.Value == 26 {
+				return 0, errors.New("r26, x+ is undefined")
+			} else if rp.Reg.Value == 27 {
+				return 0, errors.New("r27, x+ is undefined")
 			} else {
 				return base | 0x100D, nil
 			}
 
 		case Y:
-			if reg == 28 {
-				return 0, errors.New("ld r28, y+ is undefined")
-			} else if reg == 29 {
-				return 0, errors.New("ld r29, y+ is undefined")
+			if rp.Reg.Value == 28 {
+				return 0, errors.New("r28, y+ is undefined")
+			} else if rp.Reg.Value == 29 {
+				return 0, errors.New("r29, y+ is undefined")
 			} else {
 				return base | 0x1009, nil
 			}
 
 		case Z:
-			if reg == 30 {
-				return 0, errors.New("ld r30, z+ is undefined")
-			} else if reg == 31 {
-				return 0, errors.New("ld r31, z+ is undefined")
+			if rp.Reg.Value == 30 {
+				return 0, errors.New("r30, z+ is undefined")
+			} else if rp.Reg.Value == 31 {
+				return 0, errors.New("r31, z+ is undefined")
 			} else {
 				return base | 0x1001, nil
 			}
@@ -466,31 +465,30 @@ func R_pointer(base uint64, rp Value) (uint64, error) {
 		}
 
 	case *RegPointerPreDec:
-		reg := 0
 		switch Mnemonic(rp.Value) {
 		case X:
-			if reg == 26 {
-				return 0, errors.New("ld r26, -x is undefined")
-			} else if reg == 27 {
-				return 0, errors.New("ld r27, -x is undefined")
+			if rp.Reg.Value == 26 {
+				return 0, errors.New("r26, -x is undefined")
+			} else if rp.Reg.Value == 27 {
+				return 0, errors.New("r27, -x is undefined")
 			} else {
 				return base | 0x100E, nil
 			}
 
 		case Y:
-			if reg == 28 {
-				return 0, errors.New("ld r28, -y is undefined")
-			} else if reg == 29 {
-				return 0, errors.New("ld r29, -y is undefined")
+			if rp.Reg.Value == 28 {
+				return 0, errors.New("r28, -y is undefined")
+			} else if rp.Reg.Value == 29 {
+				return 0, errors.New("r29, -y is undefined")
 			} else {
 				return base | 0x100A, nil
 			}
 
 		case Z:
-			if reg == 30 {
-				return 0, errors.New("ld r30, -z is undefined")
-			} else if reg == 31 {
-				return 0, errors.New("ld r31, -z is undefined")
+			if rp.Reg.Value == 30 {
+				return 0, errors.New("r30, -z is undefined")
+			} else if rp.Reg.Value == 31 {
+				return 0, errors.New("r31, -z is undefined")
 			} else {
 				return base | 0x1002, nil
 			}
@@ -500,7 +498,7 @@ func R_pointer(base uint64, rp Value) (uint64, error) {
 		}
 
 	case *RegPointerDisp:
-		return 0, errors.New("displacement using ld is not supported")
+		return 0, errors.New("displacement using ld and st is not supported")
 
 	case *Error:
 		return 0, errors.New(rp.Value)

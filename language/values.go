@@ -1,13 +1,9 @@
 package language
 
-import (
-	"fmt"
-)
-
 type ValType int
-type PointerOp uint64
 
 type Value interface {
+	Augment(Value) error
 	Type() ValType
 	Fmt() string
 }
@@ -25,12 +21,6 @@ const (
 	IntType               ValType = 9
 	ListType              ValType = 10
 	AssignType            ValType = 11
-)
-
-const (
-	None    PointerOp = 0
-	PostInc PointerOp = 1
-	PreDec  PointerOp = 2
 )
 
 type Nil struct{}
@@ -57,10 +47,12 @@ type RegPointer struct {
 
 type RegPointerPostInc struct {
 	Value string
+	Reg   Reg
 }
 
 type RegPointerPreDec struct {
 	Value string
+	Reg   Reg
 }
 
 type RegPointerDisp struct {
@@ -127,52 +119,4 @@ func (l *List) Type() ValType {
 
 func (a *Assignment) Type() ValType {
 	return AssignType
-}
-
-func (n *Nil) Fmt() string {
-	return "nil"
-}
-
-func (e *Error) Fmt() string {
-	return fmt.Sprintf("error (%v)", e.Value)
-}
-
-func (i *Ident) Fmt() string {
-	return fmt.Sprintf("ident (%v)", i.Value)
-}
-
-func (r *Reg) Fmt() string {
-	return fmt.Sprintf("reg (%v)", r.Value)
-}
-
-func (r *RegPair) Fmt() string {
-	return fmt.Sprintf("reg (%v : %v)", r.Value+1, r.Value)
-}
-
-func (r *RegPointer) Fmt() string {
-	return fmt.Sprintf("reg (%v)", r.Value)
-}
-
-func (r *RegPointerPostInc) Fmt() string {
-	return fmt.Sprintf("reg (%v+)", r.Value)
-}
-
-func (r *RegPointerPreDec) Fmt() string {
-	return fmt.Sprintf("reg (-%v)", r.Value)
-}
-
-func (r *RegPointerDisp) Fmt() string {
-	return fmt.Sprintf("reg (%v+%v)", r.Value, r.Disp)
-}
-
-func (i *Int) Fmt() string {
-	return fmt.Sprintf("int (%v)", i.Value)
-}
-
-func (l *List) Fmt() string {
-	return fmt.Sprintf("list (%+v)", l.Value)
-}
-
-func (a *Assignment) Fmt() string {
-	return fmt.Sprintf("assignment (%v = %v)", a.Symbol, a.Value)
 }
