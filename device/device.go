@@ -15,8 +15,9 @@ type Device struct {
 
 /* Device cores */
 const (
-	AVR  Core = 0
-	AVRe Core = 1
+	Nil  Core = 0
+	AVR  Core = 1
+	AVRe Core = 2
 )
 
 /* Device Names */
@@ -29,7 +30,7 @@ const (
 /* Devices */
 var DeviceMap = map[DeviceType]Device{
 	DEFAULT: {
-		AVR,
+		Nil,
 		0x060,
 		128,
 		128,
