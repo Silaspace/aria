@@ -196,7 +196,22 @@ func EvalReg(reg parser.Reg) language.Value {
 			Value: regVal,
 		}
 
-	case *parser.PointerReg:
+	case *parser.RegPointer:
+		return &language.RegPointer{
+			Value: reg.Value,
+		}
+
+	case *parser.RegPointerPostInc:
+		return &language.RegPointerPostInc{
+			Value: reg.Value,
+		}
+
+	case *parser.RegPointerPreDec:
+		return &language.RegPointerPreDec{
+			Value: reg.Value,
+		}
+
+	case *parser.RegPointerDisp:
 		dispVal, err := strconv.ParseUint(reg.Disp, 10, 32)
 
 		if err != nil {
@@ -205,18 +220,9 @@ func EvalReg(reg parser.Reg) language.Value {
 			}
 		}
 
-		switch language.Mnemonic(reg.Value) {
-		case language.X, language.Y, language.Z:
-			return &language.RegPointer{
-				Value: language.Mnemonic(reg.Value),
-				Op:    reg.Op,
-				Disp:  dispVal,
-			}
-
-		default:
-			return &language.Error{
-				Value: fmt.Sprintf("Unknown reg pointer '%v'", reg.Value),
-			}
+		return &language.RegPointerDisp{
+			Value: reg.Value,
+			Disp:  dispVal,
 		}
 
 	case *parser.RegErr:

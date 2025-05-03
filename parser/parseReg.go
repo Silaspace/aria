@@ -62,17 +62,14 @@ func ParsePostIncRegPointer(p *Parser, reg string) Reg {
 			case lexer.TK_IMM:
 				p.GetNextToken() // Consume
 
-				return &PointerReg{
+				return &RegPointerDisp{
 					Value: reg,
-					Op:    language.Disp,
 					Disp:  nextToken.Value,
 				}
 
 			default:
-				return &PointerReg{
+				return &RegPointerPostInc{
 					Value: reg,
-					Op:    language.PostInc,
-					Disp:  "0",
 				}
 			}
 		} else {
@@ -85,10 +82,8 @@ func ParsePostIncRegPointer(p *Parser, reg string) Reg {
 		}
 
 	default:
-		return &PointerReg{
+		return &RegPointer{
 			Value: reg,
-			Op:    language.None,
-			Disp:  "0",
 		}
 	}
 }
@@ -100,10 +95,8 @@ func ParsePreDecRegPointer(p *Parser) Reg {
 
 	switch language.Mnemonic(token.Value) {
 	case language.X, language.Y, language.Z:
-		return &PointerReg{
+		return &RegPointerPreDec{
 			Value: token.Value,
-			Op:    language.PreDec,
-			Disp:  "0",
 		}
 
 	default:

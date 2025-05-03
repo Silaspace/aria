@@ -396,21 +396,9 @@ func k_6_ii(base uint64, op Value) (uint64, error) {
 /* -------- Pointer Register Operands -------- */
 
 /*
-	-- LD --
-	100b 0000 000 ppff
-
-	d - Rd
-	p - Z (1) / Y (2) / X (3)
-	f - None (0) / PostInc (1) / PreDec (2)
-	b = (Y | Z) & None
-*/
-
-/*
-Name         ld_pointer
-Description  encodes X, Y, or Z in unchanged, postinc or predec form for LD
+Name         R_pointer
+Description  encodes X, Y, or Z in unchanged, postinc or predec form for LD and ST
 Encoding
-
-	()   100b 0000 0000 ppff
 
 	(X)  1001 0000 0000 1100
 	(X+) 1001 0000 0000 1101
@@ -424,59 +412,95 @@ Encoding
 	(Z+) 1001 0000 0000 0001
 	(-Z) 1001 0000 0000 0010
 */
-func ld_pointer(base uint64, rp Value) (uint64, error) {
+func R_pointer(base uint64, rp Value) (uint64, error) {
 	switch rp := rp.(type) {
+
 	case *RegPointer:
-		if rp.Op == Disp {
-			return 0, errors.New("displacement using ld is not supported")
+		switch Mnemonic(rp.Value) {
+		case X:
+			return base | 0x100C, nil
+
+		case Y:
+			return base | 0x0008, nil
+
+		case Z:
+			return base, nil
+
+		default:
+			return 0, fmt.Errorf("pointer '%v' undefined", rp.Value)
+
 		}
 
-		reg := base >> 4
-
-		if rp.Op != None {
-			switch rp.Value {
-			case X:
-				if reg == 26 || reg == 27 {
-					return 0, errors.New("ld (r26|r27) (x+|-x) is undefined")
-				}
-			case Y:
-				if reg == 28 || reg == 29 {
-					return 0, errors.New("ld (r28|r29) (y+|-y) is undefined")
-				}
-			case Z:
-				if reg == 30 || reg == 31 {
-					return 0, errors.New("ld (r30|r31) (z+|-z) is undefined")
-				}
+	case *RegPointerPostInc:
+		reg := 0
+		switch Mnemonic(rp.Value) {
+		case X:
+			if reg == 26 {
+				return 0, errors.New("ld r26, x+ is undefined")
+			} else if reg == 27 {
+				return 0, errors.New("ld r27, x+ is undefined")
+			} else {
+				return base | 0x100D, nil
 			}
+
+		case Y:
+			if reg == 28 {
+				return 0, errors.New("ld r28, y+ is undefined")
+			} else if reg == 29 {
+				return 0, errors.New("ld r29, y+ is undefined")
+			} else {
+				return base | 0x1009, nil
+			}
+
+		case Z:
+			if reg == 30 {
+				return 0, errors.New("ld r30, z+ is undefined")
+			} else if reg == 31 {
+				return 0, errors.New("ld r31, z+ is undefined")
+			} else {
+				return base | 0x1001, nil
+			}
+
+		default:
+			return 0, fmt.Errorf("pointer '%v' undefined", rp.Value)
 		}
 
-		/*
-			p = X (3)
-			  | Y (2)
-			  | Z (0)
-		*/
-		if rp.Value == X {
-			base = base | 0x000C
+	case *RegPointerPreDec:
+		reg := 0
+		switch Mnemonic(rp.Value) {
+		case X:
+			if reg == 26 {
+				return 0, errors.New("ld r26, -x is undefined")
+			} else if reg == 27 {
+				return 0, errors.New("ld r27, -x is undefined")
+			} else {
+				return base | 0x100E, nil
+			}
+
+		case Y:
+			if reg == 28 {
+				return 0, errors.New("ld r28, -y is undefined")
+			} else if reg == 29 {
+				return 0, errors.New("ld r29, -y is undefined")
+			} else {
+				return base | 0x100A, nil
+			}
+
+		case Z:
+			if reg == 30 {
+				return 0, errors.New("ld r30, -z is undefined")
+			} else if reg == 31 {
+				return 0, errors.New("ld r31, -z is undefined")
+			} else {
+				return base | 0x1002, nil
+			}
+
+		default:
+			return 0, fmt.Errorf("pointer '%v' undefined", rp.Value)
 		}
 
-		if rp.Value == Y {
-			base = base | 0x0008
-		}
-
-		/*
-			b = not((Y or Z) and None)
-			  = X or (not None)
-		*/
-		if (rp.Value == X) && (rp.Op != None) {
-			base = base | 0x1000
-		}
-
-		/*
-			f = None    (0)
-			  | PostInc (1)
-			  | PreDec  (2)
-		*/
-		return base | uint64(rp.Op), nil
+	case *RegPointerDisp:
+		return 0, errors.New("displacement using ld is not supported")
 
 	case *Error:
 		return 0, errors.New(rp.Value)
@@ -487,187 +511,44 @@ func ld_pointer(base uint64, rp Value) (uint64, error) {
 }
 
 /*
-Name         ldd_pointer
-Description  encodes Y or Z in displacement form for LDD
+Name         R_pointer_disp
+Description  encodes Y or Z in displacement form for LDD and STD
 Encoding
 
 	(Y)   10q0 qq00 0000 1qqq
 	(Z)   10q0 qq0d dddd 0qqq
 */
-func ldd_pointer(base uint64, rp Value) (uint64, error) {
+func R_pointer_disp(base uint64, rp Value) (uint64, error) {
 	switch rp := rp.(type) {
-	case *RegPointer:
-		if rp.Op != Disp {
-			return 0, errors.New("expected displacement")
-		}
-
+	case *RegPointerDisp:
 		if rp.Disp > 63 {
 			return 0, errors.New("displacement larger than 6 bits")
 		}
 
-		if rp.Value == X {
+		switch Mnemonic(rp.Value) {
+		case X:
 			return 0, errors.New("displacement from X not supported")
-		}
 
-		if rp.Value == Y {
-			base = base | 0x0008
-		}
+		case Y:
+			return base | 0x0008 |
+				((rp.Disp << 8) & 0x2000) |
+				((rp.Disp << 7) & 0x0C00) |
+				(rp.Disp & 0x0007), nil
 
-		return base |
-			((rp.Disp << 8) & 0x2000) |
-			((rp.Disp << 7) & 0x0C00) |
-			(rp.Disp & 0x0007), nil
+		case Z:
+			return base |
+				((rp.Disp << 8) & 0x2000) |
+				((rp.Disp << 7) & 0x0C00) |
+				(rp.Disp & 0x0007), nil
+
+		default:
+			return 0, fmt.Errorf("pointer '%v' undefined", rp.Value)
+		}
 
 	case *Error:
 		return 0, errors.New(rp.Value)
 
 	default:
 		return 0, fmt.Errorf("expected reg pointer, got %+v", rp.Fmt())
-	}
-}
-
-/*
-Name         st_pointer
-Description  encodes X, Y, or Z in unchanged, postinc or predec form for ST
-Encoding
-
-	(-)  100b 0010 0000 ppff
-
-	(X)  1001 001r rrrr 1100
-	(X+) 1001 001r rrrr 1101
-	(-X) 1001 001r rrrr 1110
-
-	(Y)  1000 001r rrrr 1000
-	(Y+) 1000 001r rrrr 1000
-	(-Y) 1001 001r rrrr 1010
-
-	(Z)  1000 001r rrrr 0000
-	(Z+) 1001 001r rrrr 0001
-	(-Z) 1001 001r rrrr 0010
-*/
-func st_pointer(base uint64, rp Value) (uint64, error) {
-	switch rp := rp.(type) {
-	case *RegPointer:
-		if rp.Op == Disp {
-			return 0, errors.New("displacement using ld is not supported")
-		}
-
-		/*
-			p = X (3)
-			  | Y (2)
-			  | Z (0)
-		*/
-		if rp.Value == X {
-			base = base | 0x000C
-		}
-
-		if rp.Value == Y {
-			base = base | 0x0008
-		}
-
-		/*
-			b = not((Y or Z) and None)
-			  = X or (not None)
-		*/
-		if (rp.Value == X) && (rp.Op != None) {
-			base = base | 0x1000
-		}
-
-		/*
-			f = None    (0)
-			  | PostInc (1)
-			  | PreDec  (2)
-		*/
-		return base | uint64(rp.Op), nil
-
-	case *Error:
-		return 0, errors.New(rp.Value)
-
-	default:
-		return 0, fmt.Errorf("expected reg pointer, got %+v", rp.Fmt())
-	}
-}
-
-/*
-Name         std_pointer
-Description  encodes Y or Z in displacement form for STD
-Encoding
-
-	(Y) 10q0 qq10 0000 1qqq
-	(Z) 10q0 qq10 0000 0qqq
-*/
-func std_pointer(base uint64, rp Value) (uint64, error) {
-	switch rp := rp.(type) {
-	case *RegPointer:
-		if rp.Op != Disp {
-			return 0, errors.New("expected displacement")
-		}
-
-		if rp.Disp > 63 {
-			return 0, errors.New("displacement larger than 6 bits")
-		}
-
-		if rp.Value == X {
-			return 0, errors.New("displacement from X not supported")
-		}
-
-		if rp.Value == Y {
-			base = base | 0x0008
-		}
-
-		return base |
-			((rp.Disp << 8) & 0x2000) |
-			((rp.Disp << 7) & 0x0C00) |
-			(rp.Disp & 0x0007), nil
-
-	case *Error:
-		return 0, errors.New(rp.Value)
-
-	default:
-		return 0, fmt.Errorf("expected reg pointer, got %+v", rp.Fmt())
-	}
-}
-
-/*
-Name         Rd_st
-Description  desitination register (with undefined check for ST)
-Encoding     0000 000d dddd 0000
-*/
-func Rd_st(base uint64, op Value) (uint64, error) {
-	switch op := op.(type) {
-	case *Reg:
-
-		if op.Value > 31 {
-			return 0, errors.New("register specified does not exist")
-		}
-
-		// Check undefinedness
-		rpOp := base & 0x0003
-		rpValue := (base >> 2) & 0x0003
-
-		if rpOp != 0 {
-			switch rpValue {
-			case 3: // X
-				if op.Value == 26 || op.Value == 27 {
-					return 0, errors.New("st (x+|-x) (r26|r27) is undefined")
-				}
-			case 2: // Y
-				if op.Value == 28 || op.Value == 29 {
-					return 0, errors.New("st (y+|-y) (r2|r29) is undefined")
-				}
-			case 0: // Z
-				if op.Value == 30 || op.Value == 31 {
-					return 0, errors.New("st (z+|-z) (r30|r31) is undefined")
-				}
-			}
-		}
-
-		return base | ((op.Value << 4) & 0x01F0), nil
-
-	case *Error:
-		return 0, errors.New(op.Value)
-
-	default:
-		return 0, fmt.Errorf("expected reg, got %v", op.Fmt())
 	}
 }

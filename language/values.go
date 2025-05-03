@@ -13,22 +13,24 @@ type Value interface {
 }
 
 const (
-	NilType        ValType = 0
-	ErrType        ValType = 1
-	IdentType      ValType = 2
-	RegType        ValType = 3
-	RegPairType    ValType = 4
-	RegPointerType ValType = 5
-	IntType        ValType = 6
-	ListType       ValType = 7
-	AssignType     ValType = 8
+	NilType               ValType = 0
+	ErrType               ValType = 1
+	IdentType             ValType = 2
+	RegType               ValType = 3
+	RegPairType           ValType = 4
+	RegPointerType        ValType = 5
+	RegPointerPostIncType ValType = 6
+	RegPointerPreDecType  ValType = 7
+	RegPointerDispType    ValType = 8
+	IntType               ValType = 9
+	ListType              ValType = 10
+	AssignType            ValType = 11
 )
 
 const (
 	None    PointerOp = 0
 	PostInc PointerOp = 1
 	PreDec  PointerOp = 2
-	Disp    PointerOp = 3
 )
 
 type Nil struct{}
@@ -50,8 +52,19 @@ type RegPair struct {
 }
 
 type RegPointer struct {
-	Value Mnemonic
-	Op    PointerOp
+	Value string
+}
+
+type RegPointerPostInc struct {
+	Value string
+}
+
+type RegPointerPreDec struct {
+	Value string
+}
+
+type RegPointerDisp struct {
+	Value string
 	Disp  uint64
 }
 
@@ -92,6 +105,18 @@ func (r *RegPointer) Type() ValType {
 	return RegPointerType
 }
 
+func (r *RegPointerPostInc) Type() ValType {
+	return RegPointerPostIncType
+}
+
+func (r *RegPointerPreDec) Type() ValType {
+	return RegPointerPreDecType
+}
+
+func (r *RegPointerDisp) Type() ValType {
+	return RegPointerDispType
+}
+
 func (i *Int) Type() ValType {
 	return IntType
 }
@@ -125,18 +150,19 @@ func (r *RegPair) Fmt() string {
 }
 
 func (r *RegPointer) Fmt() string {
-	switch r.Op {
-	case None:
-		return fmt.Sprintf("reg (%v)", r.Value)
-	case PostInc:
-		return fmt.Sprintf("reg (%v+)", r.Value)
-	case PreDec:
-		return fmt.Sprintf("reg (-%v)", r.Value)
-	case Disp:
-		return fmt.Sprintf("reg (%v+%v)", r.Value, r.Disp)
-	default:
-		return fmt.Sprintf("REG_ERR (%v, %v, %v)", r.Value, r.Op, r.Disp)
-	}
+	return fmt.Sprintf("reg (%v)", r.Value)
+}
+
+func (r *RegPointerPostInc) Fmt() string {
+	return fmt.Sprintf("reg (%v+)", r.Value)
+}
+
+func (r *RegPointerPreDec) Fmt() string {
+	return fmt.Sprintf("reg (-%v)", r.Value)
+}
+
+func (r *RegPointerDisp) Fmt() string {
+	return fmt.Sprintf("reg (%v+%v)", r.Value, r.Disp)
 }
 
 func (i *Int) Fmt() string {

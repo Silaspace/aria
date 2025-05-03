@@ -726,7 +726,7 @@ var AVR_core = map[Mnemonic]Instruction{
 	LD: {
 		Base:  0x8000,
 		Op1:   Rd,
-		Op2:   ld_pointer,
+		Op2:   R_pointer,
 		Flags: 0,
 	},
 
@@ -1153,8 +1153,8 @@ var AVR_core = map[Mnemonic]Instruction{
 	*/
 	ST: {
 		Base:  0x8200,
-		Op1:   st_pointer,
-		Op2:   Rd_st,
+		Op1:   R_pointer,
+		Op2:   Rd,
 		Flags: 0,
 	},
 
@@ -1256,7 +1256,7 @@ var AVR = map[Mnemonic]Instruction{
 	LDD: {
 		Base:  0x8000,
 		Op1:   Rd,
-		Op2:   ldd_pointer,
+		Op2:   R_pointer_disp,
 		Flags: 0,
 	},
 
@@ -1283,7 +1283,7 @@ var AVR = map[Mnemonic]Instruction{
 	},
 
 	/*
-		Syntax		(i)    STD Y+q,  Rd
+		Syntax		(i)    STD Y+q, Rd
 					(ii)   STD Z+q, Rd
 
 		Encoding	(i)    10q0 qq1r rrrr 1qqq
@@ -1291,7 +1291,7 @@ var AVR = map[Mnemonic]Instruction{
 	*/
 	STD: {
 		Base:  0x8200,
-		Op1:   std_pointer,
+		Op1:   R_pointer_disp,
 		Op2:   Rd,
 		Flags: 0,
 	},
