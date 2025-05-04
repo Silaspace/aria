@@ -11,7 +11,7 @@ func ParseArg(p *Parser) Arg {
 	token := p.GetCurrentToken()
 
 	switch token.Type {
-	case lexer.TK_EOF, lexer.TK_COMMENT:
+	case lexer.TK_EOF, lexer.TK_COM:
 		return &Nil{}
 
 	case lexer.TK_LINE:

@@ -17,7 +17,7 @@ func ParseLine(p *Parser) Line {
 			p.Line++
 			continue
 
-		case lexer.TK_COMMENT:
+		case lexer.TK_COM:
 			return &Comment{
 				Value: token.Value,
 				Line:  p.Line,
@@ -185,7 +185,7 @@ func Instr(p *Parser) Line {
 		thirdToken := p.GetCurrentToken()
 
 		switch thirdToken.Type {
-		case lexer.TK_COMMENT, lexer.TK_EOF:
+		case lexer.TK_COM, lexer.TK_EOF:
 			return &Instruction{
 				Mnemonic: token.Value,
 				Op1:      arg1,
@@ -215,7 +215,7 @@ func Instr(p *Parser) Line {
 
 		}
 
-	case lexer.TK_COMMENT, lexer.TK_EOF:
+	case lexer.TK_COM, lexer.TK_EOF:
 		return &Instruction{
 			Mnemonic: token.Value,
 			Op1:      arg1,
